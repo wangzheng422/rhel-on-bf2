@@ -1,0 +1,18 @@
+#!/bin/env bash
+set -o errexit
+
+if [ "$#" -ne 2 ]; then
+  echo "Usage: $0 node0_ip node1_ip" >&2
+  echo "Run ping test from netns in node 0 to node 1"
+  exit 1
+fi
+node0_ip="$1"
+node1_ip="$2"
+
+setup_env=$(ssh root@$node0_ip "cat setup_env")
+port1_ip_mac=$(ssh root@$node0_ip "podman exec $setup_env ovn-nbctl get logical_switch_port port1 dynamic_addresses")
+port1_mac=$(echo $port1_ip_mac | sed s/\"//g | cut -d" " -f1)
+port1_ip=$(echo $port1_ip_mac | sed s/\"//g | cut -d" " -f2)
+
+ssh root@$node0_ip "ip netns exec red ip a"
+ssh root@$node0_ip "ip netns exec red ping -c 4 $port1_ip"
