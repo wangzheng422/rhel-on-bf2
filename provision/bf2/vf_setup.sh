@@ -12,7 +12,7 @@ if [ "$#" -ne 2 ]; then
         exit
 fi
 
-PCI=($(lspci -D | grep Eth.*nox | cut -d' ' -f1))
+PCI=($(lspci -D | grep "Eth.*nox" | cut -d' ' -f1))
 for i in ${PCI[@]}; do
         if [ $(ls /sys/bus/pci/devices/$i/net) = $1 ]
         then
@@ -20,12 +20,12 @@ for i in ${PCI[@]}; do
         fi
 done
 
-echo $2 > $SRIOV_PATH
+echo "$2" > "$SRIOV_PATH"
 
-if [ $(lspci | grep nox.*Virtual | wc -l) == $2 ]
+if [ "$(lspci | grep -c "nox.*Virtual")" == "$2" ]
 then
         echo "Virtual functions successfully enabled."
-        lspci | grep nox.*Virtual
+        lspci | grep "nox.*Virtual"
 else
         echo "Failure"
 fi

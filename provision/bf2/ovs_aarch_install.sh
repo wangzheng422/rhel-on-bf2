@@ -15,7 +15,7 @@ wget -P /tmp http://download.eng.bos.redhat.com/brewroot/vol/rhel-8/packages/ope
 
 wait
 
-cd /tmp
+cd /tmp || exit 1
 
 dnf install -y openvswitch2.13-2.13.0-60.el8fdp.aarch64.rpm python3-openvswitch2.13-2.13.0-60.el8fdp.aarch64.rpm openvswitch-selinux-extra-policy-1.0-22.el8fdp.noarch.rpm
 
