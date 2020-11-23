@@ -6,17 +6,20 @@
 # Local host:
 # 	./rshim_userspace_install.sh
 #
-# The card should be accessible by /dev/ttyUSB0 like this:
-# minicom --color on --baudrate 115200 --device /dev/ttyUSB0
-#
-# If uart cable is not available, this is another option:
-# minicom --color on --baudrate 115200 --device /dev/rshim0/console
 #
 # Once the rshim drivers have been succesfully installed, /dev/rshim0 should have been created.
 # To prepare the card for provisioning, use the following commands:
 # echo BOOT_MODE 1 > /dev/rshim0/misc
 # echo SW_RESET 1 > /dev/rshim0/misc
 #
+# The card should be accessible by /dev/ttyUSB0 like this:
+# minicom --color on --baudrate 115200 --device /dev/ttyUSB0
+#
+# If uart cable is not available, this is another option:
+# minicom --color on --baudrate 115200 --device /dev/rshim0/console
+#
+# Press the ESC key during boot to enter BF2 boot menu.
+# Enter the "Boot Manager" option to choose boot device.
 
 # Might be necesary for RHEL 8.2:
 # dnf install -y http://download.eng.bos.redhat.com/composes/nightly-rhel-8/RHEL-8/latest-RHEL-8/compose/CRB/x86_64/os/Packages/libusb-devel-0.1.5-12.el8.x86_64.rpm
