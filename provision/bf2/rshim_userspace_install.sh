@@ -9,11 +9,13 @@
 # The card should be accessible by /dev/ttyUSB0 like this:
 # minicom --color on --baudrate 115200 --device /dev/ttyUSB0
 #
+# If uart cable is not available, this is another option:
+# minicom --color on --baudrate 115200 --device /dev/rshim0/console
+#
 # Once the rshim drivers have been succesfully installed, /dev/rshim0 should have been created.
 # To prepare the card for provisioning, use the following commands:
 # echo BOOT_MODE 1 > /dev/rshim0/misc
 # echo SW_RESET 1 > /dev/rshim0/misc
-#
 #
 
 yum install -y automake autoconf elfutils-libelf-devel fuse-devel gcc git kernel-modules-extra libusb-devel make pciutils-devel rpm-build tmux
