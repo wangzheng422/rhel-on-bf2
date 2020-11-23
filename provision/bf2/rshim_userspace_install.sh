@@ -18,6 +18,9 @@
 # echo SW_RESET 1 > /dev/rshim0/misc
 #
 
+# Might be necesary for RHEL 8.2:
+# dnf install -y http://download.eng.bos.redhat.com/composes/nightly-rhel-8/RHEL-8/latest-RHEL-8/compose/CRB/x86_64/os/Packages/libusb-devel-0.1.5-12.el8.x86_64.rpm
+
 yum install -y automake autoconf elfutils-libelf-devel fuse-devel gcc git kernel-modules-extra libusb-devel make pciutils-devel rpm-build tmux
 cd /tmp || exit 1
 git clone https://github.com/Mellanox/rshim-user-space.git
