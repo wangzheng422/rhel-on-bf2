@@ -313,7 +313,7 @@ esac
 echo "Generate the grub.cfg..."
 grub_opts="inst.repo=http://${REPO_IP}/${DISTRO_VER}/ console=tty0 console=tty1 console=ttyS0,115200 console=ttyS1,115200"
 if [ ${ENABLE_KS} -eq 1 ]; then
-    grub_opts="${grub_opts} ks=http://${REPO_IP}/ks_${DISTRO_VER}/kickstart.ks}"
+    grub_opts="${grub_opts} ks=http://${REPO_IP}/ks_${DISTRO_VER}/kickstart.ks"
 fi
 case "${PROTOCOL}" in
     ETH)
@@ -336,9 +336,8 @@ case "${DISTRO_ISO}" in
 Select one:
 
   1 - Install Red Hat Enterprise Linux
-  2 - Boot from Harddisk
-  3 - Start install but Break to shell
-
+  2 - Start installer but Break to shell
+  3 - Reboot
 
 EOF
 
@@ -356,14 +355,13 @@ label 1
   append initrd=images/${DISTRO_VER}/initrd.img showopts ${grub_opts}
 
 label 2
-  menu label Boot from ^local drive
-  localboot 0xffff
-
-label 3
-  menu label ^Install ${DISTRO_VER} but break to shell
+  menu label ^Start installer ${DISTRO_VER} but break to shell
   kernel images/${DISTRO_VER}/vmlinuz
   append initrd=images/${DISTRO_VER}/initrd.img showopts ${grub_opts} rd.break=initqueue rd.shell
 
+label 3
+  menu label Boot from ^Reboot
+  reboot
 
 EOF
     ;;
@@ -375,12 +373,14 @@ menuentry 'Install ${DISTRO_VER}' --class red --class gnu-linux --class gnu --cl
     linux pxelinux/images/${DISTRO_VER}/vmlinuz showopts ${grub_opts}
     initrd pxelinux/images/${DISTRO_VER}/initrd.img
 }
-menuentry 'Boot from local drive' --class red --class gnu-linux --class gnu --class os {
-    localboot 0xffff
-}
-menuentry 'Install ${DISTRO_VER} but break to shell' --class red --class gnu-linux --class gnu --class os {
+
+menuentry 'Start installer ${DISTRO_VER} but break to shell' --class red --class gnu-linux --class gnu --class os {
     linux images/${DISTRO_VER}/vmlinuz ${grub_opts}
     initrd images/${DISTRO_VER}/initrd.img showopts ${grub_opts} rd.break=initqueue rd.shell
+}
+
+menuentry 'Reboot' --class red --class gnu-linux --class gnu --class os {
+    reboot
 }
 EOF
     ;;
@@ -501,10 +501,11 @@ sestate=`sestatus 2>/dev/null | head -1 | awk '{print $3}'`
 EOF
 }
 
-ifconfig ${NETDEV} ${REPO_IP}/16 up
-sleep 1
+chmod -R +r ${TFTP_PATH}/
 
-chmod -R +r /var/lib/tftpboot
+ip a add ${REPO_IP}/16 dev ${NETDEV}
+ip link set ${NETDEV} up
+sleep 1
 
 systemctl enable vsftpd
 systemctl restart vsftpd.service

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# rshim installation should be done first
 # Usage:
 # To execute on remote host:
 # 	ssh root@hostname 'bash -s' < mst_install.sh [--install]
@@ -13,7 +14,7 @@ function install {
 	else
 		MFT_VER=mft-4.15.1-9-x86_64
 	fi
-	yum install -y wget kernel-devel-"$(uname -r)" &
+	yum install -y tar wget kernel-devel-"$(uname -r)" &
 	wget -P /tmp https://www.mellanox.com/downloads/MFT/$MFT_VER-rpm.tgz &>/dev/null &
 	wait
 	cd /tmp || exit 1
