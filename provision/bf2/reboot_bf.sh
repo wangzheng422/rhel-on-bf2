@@ -30,4 +30,5 @@ while ! timeout 0.2 ping -c 1 -n 10.1.0.2 &> /dev/null
 do
     printf "%c" "."
 done
+wait 5
 modprobe -av mlx5_{ib,core}
