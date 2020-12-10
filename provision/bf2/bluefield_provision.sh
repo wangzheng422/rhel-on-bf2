@@ -11,7 +11,7 @@
 #
 
 function mst_install {
-	if [ "$(uname -r | cut -d. -f5)" = aarch64 ]; then
+	if [ "$(uname -m)" = aarch64 ]; then
 		MFT_VER=mft-4.15.1-9-arm64
 	else
 		MFT_VER=mft-4.15.1-9-x86_64
