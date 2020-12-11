@@ -17,8 +17,11 @@ function mst_install {
 		MFT_VER=mft-4.15.1-9-x86_64
 	fi
 
-	yum install -y tar wget kernel-devel-"$(uname -r)"
-	wget -P /tmp https://www.mellanox.com/downloads/MFT/$MFT_VER-rpm.tgz &>/dev/null
+	yum install -y tar wget
+	yum install -y kernel-devel-"$(uname -r)" &
+	wget -P /tmp https://www.mellanox.com/downloads/MFT/$MFT_VER-rpm.tgz &>/dev/null &
+
+	wait
 
 	cd /tmp || exit 1
 	tar xf $MFT_VER-rpm.tgz
@@ -28,7 +31,7 @@ function mst_install {
 }
 
 function rshim_install {
-	if [ "$(cat /etc/redhat-release | cut -d' ' -f 6)" = 8.2 ]; then
+	if [ "$(cut -d' ' -f 6 < /etc/redhat-release)" = 8.2 ]; then
 		dnf install -y http://download.eng.bos.redhat.com/composes/nightly-rhel-8/RHEL-8/latest-RHEL-8/compose/CRB/x86_64/os/Packages/libusb-devel-0.1.5-12.el8.x86_64.rpm
 	fi
 
@@ -41,10 +44,10 @@ function rshim_install {
 
 
 	rpm_topdir=/tmp/rshim_provision_build
-	/bin/rm -rf $(rpm_topdir)
+	/bin/rm -rf "$(rpm_topdir)"
 	mkdir -p $rpm_topdir/{RPMS,BUILD,SRPM,SPECS,SOURCES}
 	version=$(grep "Version:" *.spec | head -1 | awk '{print $NF}')
-	git archive --format=tgz --prefix=rshim-"${version}"/ HEAD > $rpm_topdir/SOURCES/rshim-${version}.tar.gz
+	git archive --format=tgz --prefix=rshim-"${version}"/ HEAD > $rpm_topdir/SOURCES/rshim-"${version}".tar.gz
 	rpmbuild -ba --nodeps --define "_topdir $rpm_topdir" --define 'dist %{nil}' *.spec
 
 	rpm -ivh $rpm_topdir/RPMS/*/*rpm
@@ -57,10 +60,6 @@ function firmware_update {
 
 	if ! rpm -qa | grep -q rshim; then
 		rshim_install
-	fi
-
-	if [ ! -f /usr/bin/mst ]; then
-		mst_install
 	fi
 
 	wget http://www.mellanox.com/downloads/BlueField/BlueField-3.1.0.11424/BlueField-3.1.0.11424_install.bfb
@@ -80,6 +79,27 @@ cat BlueField-3.1.0.11424_install.bfb > /dev/rshim0/boot
 Perform FW update? [y/N] - y
 reboot x86_64 host
 EOF
+}
+
+function pxe_install {
+
+	wget http://download.eng.bos.redhat.com/released/RHEL-8/8.3.0/BaseOS/aarch64/iso/RHEL-8.3.0-20201009.2-aarch64-dvd1.iso
+	wget --no-check-certificate https://gitlab.cee.redhat.com/egarver/smart-nic-poc/-/raw/master/provision/bf2/RHEL8.ks
+	wget --no-check-certificate https://gitlab.cee.redhat.com/egarver/smart-nic-poc/-/raw/master/provision/bf2/PXE_setup_RHEL_install_over_mlx.sh
+	chmod +x PXE_setup_RHEL_install_over_mlx.sh
+	iptables -F
+	./PXE_setup_RHEL_install_over_mlx.sh -i RHEL-8.3.0-20201009.2-aarch64-dvd1.iso -p tmfifo -k RHEL8.KS
+	cat << EOF
+PXE server has been set up.
+Use minicom to access to access card and initiate PXE boot.
+If UART cable is connected: minicom --color on --baudrate 115200 --device /dev/ttyUSB0
+Else: minicom --color on --baudrate 115200 --device /dev/rshim0/console
+
+Press ESC after entering bluefield console to reach boot menu.
+Select "Boot Manager" and then boot from EFI NETWORK 4.
+RHEL installation should begin.
+EOF
+
 }
 
 
@@ -108,8 +128,30 @@ function sriov_check {
 	fi
 }
 
-while getopts "rmfsp:" opt; do
+function help {
+	cat << EOF
+./bluefield_provision.sh [options]
+
+Options:
+  -r	Install rshim drivers
+  -m	Install MST
+  -f	Update BF2 firmware
+  -s    Enable ECPF mode if not already enabled
+  -p	Set up PXE boot server for provisioning BF2
+  -a	Run all provisioning scripts
+EOF
+
+}
+
+while getopts "armfsp:" opt; do
     case $opt in
+        a)
+	    rshim_install
+	    mst_install
+	    firmware_update
+	    read -p "Press enter to continue once firmware installation is complete."
+	    pxe_install
+            ;;
         r)
 	    rshim_install
             ;;
@@ -122,9 +164,12 @@ while getopts "rmfsp:" opt; do
         s)
 	    sriov_check
             ;;
+        p)
+	    pxe_install
+            ;;
         \?)
-	    echo help
-            exit -1
+	    help
+            exit 1
             ;;
     esac
 done

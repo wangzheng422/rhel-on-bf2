@@ -20,7 +20,7 @@ eula --agreed
 timezone --utc Asia/Jerusalem
 
 # Root password
-rootpw password
+rootpw bluefield
 
 # Disable firewall
 firewall --disabled

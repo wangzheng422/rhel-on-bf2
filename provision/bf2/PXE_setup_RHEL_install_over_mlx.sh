@@ -212,7 +212,8 @@ if ! ip link show ${NETDEV} &>/dev/null ; then
     echo "netdev not found or not given!"
     exit -1
 fi
-ifconfig ${NETDEV} ${REPO_IP}/16 up
+ip a add  ${REPO_IP}/16 dev ${NETDEV}
+ip link set ${NETDEV} up
 
 DISTRO_VER=$(basename ${DISTRO_ISO} | sed -e 's/-dvd1.iso//g')
 
