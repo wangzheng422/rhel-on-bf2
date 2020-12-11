@@ -16,9 +16,10 @@ function mst_install {
 	else
 		MFT_VER=mft-4.15.1-9-x86_64
 	fi
-	yum install -y tar wget kernel-devel-"$(uname -r)" &
-	wget -P /tmp https://www.mellanox.com/downloads/MFT/$MFT_VER-rpm.tgz &>/dev/null &
-	wait
+
+	yum install -y tar wget kernel-devel-"$(uname -r)"
+	wget -P /tmp https://www.mellanox.com/downloads/MFT/$MFT_VER-rpm.tgz &>/dev/null
+
 	cd /tmp || exit 1
 	tar xf $MFT_VER-rpm.tgz
 	cd $MFT_VER-rpm || exit 1
