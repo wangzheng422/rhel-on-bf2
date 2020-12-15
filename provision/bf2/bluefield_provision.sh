@@ -36,6 +36,7 @@ function rshim_install {
 	fi
 
 	yum install -y automake autoconf elfutils-libelf-devel fuse-devel gcc git kernel-modules-extra libusb-devel make minicom pciutils-devel rpm-build tmux
+	echo "pu rtscts           No" > /root/.minirc.dfl
 	cd /tmp || exit 1
 	git clone https://github.com/Mellanox/rshim-user-space.git
 	cd rshim-user-space || exit 1
@@ -72,23 +73,24 @@ Else: minicom --color on --baudrate 115200 --device /dev/rshim0/console
 Log in with passwordless user: root
 Run the following commands:
 ~]# /opt/mellanox/scripts/bfrec
-~]# reboot
-Repeat the previous step and again log into yocto with passwordless root
-cat BlueField-3.1.0.11424_install.bfb > /dev/rshim0/boot
 ~]# /lib/firmware/mellanox/mlxfwmanager_sriov_dis_aarch64_41686
+...
 Perform FW update? [y/N] - y
-reboot x86_64 host
+Wait for FW update to complete.
 EOF
 }
 
-function pxe_install {
+function pxe_install() {
 
+	cd /tmp
 	wget http://download.eng.bos.redhat.com/released/RHEL-8/8.3.0/BaseOS/aarch64/iso/RHEL-8.3.0-20201009.2-aarch64-dvd1.iso
-	wget --no-check-certificate https://gitlab.cee.redhat.com/egarver/smart-nic-poc/-/raw/master/provision/bf2/RHEL8.ks
+	wget --no-check-certificate https://gitlab.cee.redhat.com/egarver/smart-nic-poc/-/raw/master/provision/bf2/RHEL8-bluefield.ks
 	wget --no-check-certificate https://gitlab.cee.redhat.com/egarver/smart-nic-poc/-/raw/master/provision/bf2/PXE_setup_RHEL_install_over_mlx.sh
 	chmod +x PXE_setup_RHEL_install_over_mlx.sh
 	iptables -F
-	./PXE_setup_RHEL_install_over_mlx.sh -i RHEL-8.3.0-20201009.2-aarch64-dvd1.iso -p tmfifo -k RHEL8.KS
+	./PXE_setup_RHEL_install_over_mlx.sh -i RHEL-8.3.0-20201009.2-aarch64-dvd1.iso -p tmfifo -k RHEL8-bluefield.KS
+	echo BOOT_MODE 1 > /dev/rshim0/misc
+	echo SW_RESET 1 > /dev/rshim0/misc
 	cat << EOF
 PXE server has been set up.
 Use minicom to access to access card and initiate PXE boot.
@@ -97,35 +99,41 @@ Else: minicom --color on --baudrate 115200 --device /dev/rshim0/console
 
 Press ESC after entering bluefield console to reach boot menu.
 Select "Boot Manager" and then boot from EFI NETWORK 4.
-RHEL installation should begin.
+Select "Install RHEL-8.3.0-20201009.2-aarch64"
 EOF
+	read -p 'Press enter once you have started the PXE installation through the BF2 console and NBP file has been downloaded succesfully.'
+	iptables -t nat -A POSTROUTING -o $1 -j MASQUERADE
 
 }
 
 
 function sriov_check {
 	mst start
-	MST=$(mst status | grep -Po "/dev/mst/[\w\d]+")
-	if mlxconfig -d "$MST" q | grep SRIOV_EN | grep -q "True\|1"; then
-		echo "SRIOV enabled"
-	else
-		echo "SRIOV needs to be enabled in BIOS"
-	fi
+	MST_LIST=($(mst status | grep -Po "/dev/mst/[\w\d]+"))
 
-	if mlxconfig -e -d "$MST"  q | grep -i internal |  cut -d' ' -f28 | grep -q EMBEDDED_CPU\(1\); then
-		echo "EMBEDDED_CPU mode enabled"
-	else
-		echo "SEPARATED_HOST mode enabled, cannot proceed with VF setup"
-		if mlxconfig -e -d "$MST" q | grep -i internal | cut -d' ' -f29 | grep -q EMBEDDED_CPU\(1\); then
-			echo "EMBEDDED_CPU mode is set to be enabled on next boot. Power cycle the system to enable it."
+	for MST in ${MST_LIST[@]}; do
+		if mlxconfig -d "$MST" q | grep SRIOV_EN | grep -q "True\|1"; then
+			echo "SRIOV enabled"
 		else
-			echo "Enabling EMBEDDED_CPU mode"
-			mlxconfig -d "$MST" s INTERNAL_CPU_MODEL=1
-			mlxconfig -d "$MST".1 s INTERNAL_CPU_MODEL=1
-			echo "EMBEDDED_CPU mode will be enabled on next boot. Power cycle the system to enable it."
+			echo "SRIOV needs to be enabled in BIOS"
 		fi
-		exit 1
-	fi
+
+		if mlxconfig -e -d "$MST"  q | grep -i internal |  cut -d' ' -f28 | grep -q EMBEDDED_CPU\(1\); then
+			echo "EMBEDDED_CPU mode enabled"
+		else
+			echo "SEPARATED_HOST mode enabled, cannot proceed with VF setup"
+			if mlxconfig -e -d "$MST" q | grep -i internal | cut -d' ' -f29 | grep -q EMBEDDED_CPU\(1\); then
+				echo "EMBEDDED_CPU mode is set to be enabled on next boot. Power cycle the system to enable it."
+			else
+				echo "Enabling EMBEDDED_CPU mode"
+				mlxconfig -d "$MST" s INTERNAL_CPU_MODEL=1
+				mlxconfig -d "$MST".1 s INTERNAL_CPU_MODEL=1
+				echo "EMBEDDED_CPU mode will be enabled on next boot. Power cycle the system to enable it."
+			fi
+			exit 1
+		fi
+
+	done
 }
 
 function help {
@@ -143,14 +151,20 @@ EOF
 
 }
 
-while getopts "armfsp:" opt; do
+while getopts "armfsp" opt; do
     case $opt in
         a)
+	    read -p 'Which interface should be used to access the internet: ' interface
 	    rshim_install
 	    mst_install
 	    firmware_update
 	    read -p "Press enter to continue once firmware installation is complete."
-	    pxe_install
+	    sriov_check
+	    pxe_install interface
+            ;;
+
+        c)
+	    mst_check
             ;;
         r)
 	    rshim_install
