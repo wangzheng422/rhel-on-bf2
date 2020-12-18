@@ -397,11 +397,9 @@ esac
 # DHCP-SERVER assigns IP address to the target, and specify the boot image.
 #
 echo "Setup dhcp service..."
-if [ ! -e "/etc/dhcp/dhcpd.conf" ]; then
-  echo "Can't find /etc/dhcp/dhcpd.conf."
-  exit -1
+if [ -e "/etc/dhcp/dhcpd.conf" ]; then
+    cp /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.save
 fi
-cp /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.save
 
 NAME_SERVERS=`cat /etc/resolv.conf | grep -e "^[[:blank:]]*nameserver" | awk '{print $2}'`
 NAME_SERVERS=`echo ${NAME_SERVERS} | sed 's/ /, /g'`
