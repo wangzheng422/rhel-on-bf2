@@ -93,26 +93,18 @@ type systemctl >/dev/null 2>&1 && NEW_VER=1
 
 setup_rshim()
 {
-    if [ ! -e "/etc/sysconfig/network-scripts/ifcfg-tmfifo_net0" ]; then
-        echo "Creating tmfifo interface config..."
-        cat >/etc/sysconfig/network-scripts/ifcfg-tmfifo_net0 <<EOF
-DEVICE=tmfifo_net0
-NAME=tmfifo_net0
-BOOTPROTO=none
-ONBOOT=yes
-IPADDR=${REPO_IP}
-PREFIX=24
-MTU=1500
-IPV6INIT=yes
-NM_CONTROLLED=no
-EOF
-    fi
+    nmcli conn delete ${NETDEV}
+    rm /etc/sysconfig/network-scripts/ifcfg-${NETDEV}
+    nmcli conn add type tun mode tap con-name ${NETDEV} ifname ${NETDEV} autoconnect yes ip4 ${REPO_IP}
+    nmcli conn modify tmfifo_net0 ipv4.routes 172.31.100.0/24
+    systemctl restart NetworkManager
+    nmcli conn up ${NETDEV}
 
     # Create rshim udev rules.
-    if [ ! -e /etc/udev/rules.d/91-tmfifo_net.rules ]; then
+    if :; then
         echo "Creating rshim tmfifo_net0 udev rules..."
         cat >/etc/udev/rules.d/91-tmfifo_net.rules <<EOF
-SUBSYSTEM=="net", ACTION=="add", ATTR{address}=="00:1a:ca:ff:ff:02", ATTR{type}=="1", NAME="tmfifo_net0", RUN+="/usr/bin/sh -c '/usr/sbin/ifup tmfifo_net0 2>/dev/null || /sbin/ip link set dev tmfifo_net0 up'"
+SUBSYSTEM=="net", ACTION=="add", ATTR{address}=="00:1a:ca:ff:ff:02", ATTR{type}=="1", NAME="${NETDEV} RUN+="/usr/bin/nmcli conn up ${NETDEV}"
 EOF
     fi
 
@@ -149,8 +141,6 @@ EOF
         systemctl start rshim
         systemctl status rshim
     fi
-
-    /sbin/ifup tmfifo_net0
 }
 
 
@@ -199,21 +189,14 @@ case "${PROTOCOL}" in
         echo
         ;;
     tmfifo)
-        setup_rshim
         NETDEV="tmfifo_net0"
+        setup_rshim
         ;;
     *)
         echo "Unsupported protocol: ${PROTOCOL}"
         exit 1
         ;;
 esac
-
-if ! ip link show ${NETDEV} &>/dev/null ; then
-    echo "netdev not found or not given!"
-    exit -1
-fi
-ip a add  ${REPO_IP}/24 dev ${NETDEV}
-ip link set ${NETDEV} up
 
 DISTRO_VER=$(basename ${DISTRO_ISO} | sed -e 's/-dvd1.iso//g')
 
@@ -501,10 +484,6 @@ EOF
 }
 
 chmod -R +r ${TFTP_PATH}/
-
-ip a add ${REPO_IP}/24 dev ${NETDEV}
-ip link set ${NETDEV} up
-sleep 1
 
 systemctl enable vsftpd
 systemctl restart vsftpd.service

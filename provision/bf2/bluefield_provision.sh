@@ -133,6 +133,10 @@ function pxe_install() {
 	echo BOOT_MODE 1 > /dev/rshim0/misc
 	echo SW_RESET 1 > /dev/rshim0/misc
 
+	sleep 10
+	nmcli conn up tmfifo_net0
+	systemctl restart dhcpd
+
 	expect -c '
 		spawn minicom --color on --baudrate 115200 --device /dev/rshim0/console
 		# Spam "ESC" until we see "Boot Manager"
