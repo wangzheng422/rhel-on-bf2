@@ -37,8 +37,8 @@ TFTP_CFG=/etc/xinetd.d/tftp
 KS_FILE=
 ENABLE_KS=0
 
-REPO_IP="99.88.100.1"
-SUBNET="99.88"
+SUBNET="172.31.100"
+REPO_IP="${SUBNET}.1"
 PROTOCOL="ETH"
 NETDEV=TBD
 
@@ -101,7 +101,7 @@ NAME=tmfifo_net0
 BOOTPROTO=none
 ONBOOT=yes
 IPADDR=${REPO_IP}
-PREFIX=16
+PREFIX=24
 MTU=1500
 IPV6INIT=yes
 NM_CONTROLLED=no
@@ -212,7 +212,7 @@ if ! ip link show ${NETDEV} &>/dev/null ; then
     echo "netdev not found or not given!"
     exit -1
 fi
-ip a add  ${REPO_IP}/16 dev ${NETDEV}
+ip a add  ${REPO_IP}/24 dev ${NETDEV}
 ip link set ${NETDEV} up
 
 DISTRO_VER=$(basename ${DISTRO_ISO} | sed -e 's/-dvd1.iso//g')
@@ -438,9 +438,9 @@ option architecture-type code 93 = unsigned integer 16;
 allow booting;
 allow bootp;
 
-subnet ${SUBNET}.0.0 netmask 255.255.0.0 {
-    range ${SUBNET}.100.10 ${SUBNET}.100.20;
-    option broadcast-address ${SUBNET}.225.255;
+subnet ${SUBNET}.0 netmask 255.255.255.0 {
+    range ${SUBNET}.10 ${SUBNET}.20;
+    option broadcast-address ${SUBNET}.255;
     option routers ${REPO_IP};
     ${NAME_SERVERS_STR}
     ${DOMAIN_NAMES_STR}
@@ -470,9 +470,9 @@ if [ $ENABLE_KS -eq 1 ]; then
 fi
 
 if [ "$NEW_VER" = "1" ]; then
-    HTTP_PERMISSION="Require ip 127.0.0.1 ${SUBNET}.100.0/16"
+    HTTP_PERMISSION="Require ip 127.0.0.1 ${SUBNET}.0/24"
 else
-    HTTP_PERMISSION="Allow from 127.0.0.1 ${SUBNET}.100.0/16"
+    HTTP_PERMISSION="Allow from 127.0.0.1 ${SUBNET}.0/24"
 fi
 
 cat >/etc/httpd/conf.d/pxeboot_${DISTRO_VER}.conf <<EOF
@@ -504,7 +504,7 @@ EOF
 
 chmod -R +r ${TFTP_PATH}/
 
-ip a add ${REPO_IP}/16 dev ${NETDEV}
+ip a add ${REPO_IP}/24 dev ${NETDEV}
 ip link set ${NETDEV} up
 sleep 1
 
