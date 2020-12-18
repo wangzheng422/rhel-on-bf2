@@ -107,11 +107,8 @@ function pxe_install() {
 
 	cd /tmp
 	wget -c http://download.eng.bos.redhat.com/released/RHEL-8/8.3.0/BaseOS/aarch64/iso/RHEL-8.3.0-20201009.2-aarch64-dvd1.iso
-	wget -c --no-check-certificate https://gitlab.cee.redhat.com/egarver/smart-nic-poc/-/raw/master/provision/bf2/RHEL8-bluefield.ks
-	wget -c --no-check-certificate https://gitlab.cee.redhat.com/egarver/smart-nic-poc/-/raw/master/provision/bf2/PXE_setup_RHEL_install_over_mlx.sh
-	chmod +x PXE_setup_RHEL_install_over_mlx.sh
 	iptables -F
-	./PXE_setup_RHEL_install_over_mlx.sh -i RHEL-8.3.0-20201009.2-aarch64-dvd1.iso -p tmfifo -k RHEL8-bluefield.KS
+	bash ./PXE_setup_RHEL_install_over_mlx.sh -i RHEL-8.3.0-20201009.2-aarch64-dvd1.iso -p tmfifo -k RHEL8-bluefield.KS
 	echo BOOT_MODE 1 > /dev/rshim0/misc
 	echo SW_RESET 1 > /dev/rshim0/misc
 	cat << EOF
