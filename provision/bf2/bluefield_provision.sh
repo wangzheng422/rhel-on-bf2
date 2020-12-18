@@ -10,12 +10,17 @@
 # 	./mst_install.sh [--install]
 #
 
+function status {
+	printf "=== STATUS === %s\n" "$@"
+}
+
 function die {
 	printf "!!! FAILED !!! %s\n" "$@"
 	exit 1
 }
 
 function mst_install {
+	status "Installing MST tools"
 	if [ "$(uname -m)" = aarch64 ]; then
 		MFT_VER=mft-4.15.1-9-arm64
 	else
@@ -36,6 +41,7 @@ function mst_install {
 }
 
 function rshim_install {
+	status "Installing rshim driver and tools"
 	if [ "$(cut -d' ' -f 6 < /etc/redhat-release)" = 8.2 ]; then
 		dnf install -y http://download.eng.bos.redhat.com/composes/nightly-rhel-8/RHEL-8/latest-RHEL-8/compose/CRB/x86_64/os/Packages/libusb-devel-0.1.5-12.el8.x86_64.rpm
 	fi
@@ -63,6 +69,7 @@ function rshim_install {
 }
 
 function firmware_update {
+	status "Performing firmware update"
 
 	if ! rpm -qa | grep -q rshim; then
 		rshim_install
@@ -70,6 +77,7 @@ function firmware_update {
 	dnf -y install expect
 
 	wget -c http://www.mellanox.com/downloads/BlueField/BlueField-3.1.0.11424/BlueField-3.1.0.11424_install.bfb
+	status "Sending firmware to BF2. Please wait."
 	cat BlueField-3.1.0.11424_install.bfb > /dev/rshim0/boot
 	expect -c '
 		spawn minicom --baudrate 115200 --device /dev/rshim0/console
@@ -91,6 +99,8 @@ function firmware_update {
 }
 
 function pxe_install() {
+	status "PXE booting the BF2"
+
 	# deduced the interface we use to access the internet via the default route
 	local uplink_interface="$(ip route |grep ^default | sed 's/.*dev \([^ ]\+\).*/\1/')"
 	test -n "${uplink_interface}" || die "need a default route"
@@ -121,6 +131,8 @@ EOF
 
 
 function sriov_check {
+	status "Checking usability of SRIOV"
+
 	mst start
 	MST_LIST=($(mst status | grep -Po "/dev/mst/[\w\d]+"))
 
