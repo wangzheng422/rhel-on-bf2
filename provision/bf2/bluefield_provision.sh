@@ -81,6 +81,8 @@ EOF
 }
 
 function pxe_install() {
+	# deduced the interface we use to access the internet via the default route
+	local uplink_interface="$(ip route |grep ^default | sed 's/.*dev \([^ ]\+\).*/\1/')"
 
 	cd /tmp
 	wget http://download.eng.bos.redhat.com/released/RHEL-8/8.3.0/BaseOS/aarch64/iso/RHEL-8.3.0-20201009.2-aarch64-dvd1.iso
@@ -101,8 +103,8 @@ Press ESC after entering bluefield console to reach boot menu.
 Select "Boot Manager" and then boot from EFI NETWORK 4.
 Select "Install RHEL-8.3.0-20201009.2-aarch64"
 EOF
-	read -p 'Press enter once you have started the PXE installation through the BF2 console and NBP file has been downloaded succesfully.'
-	iptables -t nat -A POSTROUTING -o $1 -j MASQUERADE
+	read -p 'Press enter once you have started the PXE installation through the BF2 console and NBP file has been downloaded successfully.'
+	iptables -t nat -A POSTROUTING -o ${uplink_interface} -j MASQUERADE
 
 }
 
@@ -154,13 +156,12 @@ EOF
 while getopts "armfsp" opt; do
     case $opt in
         a)
-	    read -p 'Which interface should be used to access the internet: ' interface
 	    rshim_install
 	    mst_install
 	    firmware_update
 	    read -p "Press enter to continue once firmware installation is complete."
 	    sriov_check
-	    pxe_install interface
+	    pxe_install
             ;;
 
         c)
