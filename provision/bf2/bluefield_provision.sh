@@ -67,22 +67,27 @@ function firmware_update {
 	if ! rpm -qa | grep -q rshim; then
 		rshim_install
 	fi
+	dnf -y install expect
 
 	wget http://www.mellanox.com/downloads/BlueField/BlueField-3.1.0.11424/BlueField-3.1.0.11424_install.bfb
 	cat BlueField-3.1.0.11424_install.bfb > /dev/rshim0/boot
-	cat << EOF
-Use minicom to access to access card.
-If UART cable is connected: minicom --color on --baudrate 115200 --device /dev/ttyUSB0
-Else: minicom --color on --baudrate 115200 --device /dev/rshim0/console
-                                                                                       
-Log in with passwordless user: root
-Run the following commands:
-~]# /opt/mellanox/scripts/bfrec
-~]# /lib/firmware/mellanox/mlxfwmanager_sriov_dis_aarch64_41686
-...
-Perform FW update? [y/N] - y
-Wait for FW update to complete.
-EOF
+	expect -c '
+		spawn minicom --baudrate 115200 --device /dev/rshim0/console
+		expect {
+			"login:" { send "root\r"; exp_continue }
+			"# " { send "/opt/mellanox/scripts/bfrec\r" }
+			timeout { send "\r"; exp_continue }
+		}
+		expect {
+			"# " { send "/lib/firmware/mellanox/mlxfwmanager_sriov_dis_aarch64_41686\r" }
+			timeout exp_continue
+		}
+		expect {
+			"Perform FW update?" { send "y\r"; exp_continue }
+			"# " { exit }
+			timeout exp_continue
+		}
+	'
 }
 
 function pxe_install() {
@@ -165,7 +170,6 @@ while getopts "armfsp" opt; do
 	    rshim_install
 	    mst_install
 	    firmware_update
-	    read -p "Press enter to continue once firmware installation is complete."
 	    sriov_check
 	    pxe_install
             ;;
