@@ -108,7 +108,7 @@ function pxe_install() {
 	cd /tmp
 	wget -c http://download.eng.bos.redhat.com/released/RHEL-8/8.3.0/BaseOS/aarch64/iso/RHEL-8.3.0-20201009.2-aarch64-dvd1.iso
 	iptables -F
-	bash ./PXE_setup_RHEL_install_over_mlx.sh -i RHEL-8.3.0-20201009.2-aarch64-dvd1.iso -p tmfifo -k RHEL8-bluefield.KS
+	bash ./PXE_setup_RHEL_install_over_mlx.sh -i RHEL-8.3.0-20201009.2-aarch64-dvd1.iso -p tmfifo -k RHEL8-bluefield.ks
 	echo BOOT_MODE 1 > /dev/rshim0/misc
 	echo SW_RESET 1 > /dev/rshim0/misc
 	cat << EOF
