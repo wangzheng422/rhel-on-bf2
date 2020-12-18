@@ -28,9 +28,9 @@ function mst_install {
 
 	wait
 
-	cd /tmp || exit 1
+	cd /tmp || die "cd /tmp"
 	tar xf $MFT_VER-rpm.tgz
-	cd $MFT_VER-rpm || exit 1
+	cd $MFT_VER-rpm || die "cd $MFT_VER-rpm"
 	./install.sh
 	mst start
 }
@@ -42,9 +42,9 @@ function rshim_install {
 
 	yum install -y automake autoconf elfutils-libelf-devel fuse-devel gcc git kernel-modules-extra libusb-devel make minicom pciutils-devel rpm-build tmux
 	echo "pu rtscts           No" > /root/.minirc.dfl
-	cd /tmp || exit 1
+	cd /tmp || die "cd /tmp"
 	git clone https://github.com/Mellanox/rshim-user-space.git
-	cd rshim-user-space || exit 1
+	cd rshim-user-space || die "cd rshim-user-space"
 	./bootstrap.sh
 	./configure
 
@@ -190,7 +190,7 @@ while getopts "armfsp" opt; do
             ;;
         \?)
 	    help
-            exit 1
+            exit 0
             ;;
     esac
 done
