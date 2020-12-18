@@ -10,6 +10,11 @@
 # 	./mst_install.sh [--install]
 #
 
+function die {
+	printf "!!! FAILED !!! %s\n" "$@"
+	exit 1
+}
+
 function mst_install {
 	if [ "$(uname -m)" = aarch64 ]; then
 		MFT_VER=mft-4.15.1-9-arm64
@@ -83,6 +88,7 @@ EOF
 function pxe_install() {
 	# deduced the interface we use to access the internet via the default route
 	local uplink_interface="$(ip route |grep ^default | sed 's/.*dev \([^ ]\+\).*/\1/')"
+	test -n "${uplink_interface}" || die "need a default route"
 
 	cd /tmp
 	wget http://download.eng.bos.redhat.com/released/RHEL-8/8.3.0/BaseOS/aarch64/iso/RHEL-8.3.0-20201009.2-aarch64-dvd1.iso
