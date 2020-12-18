@@ -10,6 +10,10 @@
 # 	./mst_install.sh [--install]
 #
 
+function info {
+	printf "=== INFO === %s\n" "$@"
+}
+
 function status {
 	printf "=== STATUS === %s\n" "$@"
 }
@@ -101,7 +105,7 @@ function firmware_update {
 }
 
 function pxe_install() {
-	status "PXE booting the BF2"
+	status "Setting up PXE environment"
 
 	# deduced the interface we use to access the internet via the default route
 	local uplink_interface="$(ip route |grep ^default | sed 's/.*dev \([^ ]\+\).*/\1/')"
@@ -111,21 +115,54 @@ function pxe_install() {
 	wget -O "/tmp/${RHEL_ISO##*/}" -c http://download.eng.bos.redhat.com/released/RHEL-8/8.3.0/BaseOS/aarch64/iso/RHEL-8.3.0-20201009.2-aarch64-dvd1.iso
 	iptables -F
 	bash ./PXE_setup_RHEL_install_over_mlx.sh -i "/tmp/${RHEL_ISO##*/}" -p tmfifo -k RHEL8-bluefield.ks
+
+	info "The BF2 is about to be rebooted and minicom console"
+	info "started. You must manually select the PXE boot device."
+	info "This can't be fully automated because the list of"
+	info "options is not consistent."
+	info ""
+	info "ACTION: When you see the \"Boot Option Menu\" select option"
+	info "\"EFI NETWORK 4\" and press enter. After that the automation"
+	info "picks up again. Let it take over. The console and reboot are"
+	info "slow. Have patience."
+	info ""
+	info "Press enter when you're ready."
+	read
+
+	status "PXE booting the BF2 and starting minicom"
 	echo BOOT_MODE 1 > /dev/rshim0/misc
 	echo SW_RESET 1 > /dev/rshim0/misc
-	cat << EOF
-PXE server has been set up.
-Use minicom to access to access card and initiate PXE boot.
-If UART cable is connected: minicom --color on --baudrate 115200 --device /dev/ttyUSB0
-Else: minicom --color on --baudrate 115200 --device /dev/rshim0/console
 
-Press ESC after entering bluefield console to reach boot menu.
-Select "Boot Manager" and then boot from EFI NETWORK 4.
-Select "Install RHEL-8.3.0-20201009.2-aarch64"
-EOF
-	read -p 'Press enter once you have started the PXE installation through the BF2 console and NBP file has been downloaded successfully.'
+	expect -c '
+		spawn minicom --color on --baudrate 115200 --device /dev/rshim0/console
+		# Spam "ESC" until we see "Boot Manager"
+		#
+		set timeout 1
+		expect {
+			"Boot Manager" { send "OBOB"; send "\r"; }
+			timeout { send ""; exp_continue }
+		}
+		set timeout 600
+		interact {
+			\015 { send "\r"; return; }
+			* { exp_continue }
+		}
+		expect {
+			"Install" { send "\r"; }
+		}
+	'
+	reset # reset console, trashed after expect/minicom
+
 	iptables -t nat -A POSTROUTING -o ${uplink_interface} -j MASQUERADE
 
+	info "The RHEL install has been started. This is the end of the automation."
+	info "I will reattach the minicom console to see the install progress."
+	info "You can drop it anytime with key sequence: ctrl-a X"
+	info ""
+	info "Press enter when you're ready."
+	read
+
+	minicom --color on --baudrate 115200 --device /dev/rshim0/console
 }
 
 
