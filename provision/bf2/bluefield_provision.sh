@@ -24,7 +24,7 @@ function mst_install {
 
 	yum install -y tar wget
 	yum install -y kernel-devel-"$(uname -r)" &
-	wget -P /tmp https://www.mellanox.com/downloads/MFT/$MFT_VER-rpm.tgz &>/dev/null &
+	wget -c -P /tmp https://www.mellanox.com/downloads/MFT/$MFT_VER-rpm.tgz &>/dev/null &
 
 	wait
 
@@ -69,7 +69,7 @@ function firmware_update {
 	fi
 	dnf -y install expect
 
-	wget http://www.mellanox.com/downloads/BlueField/BlueField-3.1.0.11424/BlueField-3.1.0.11424_install.bfb
+	wget -c http://www.mellanox.com/downloads/BlueField/BlueField-3.1.0.11424/BlueField-3.1.0.11424_install.bfb
 	cat BlueField-3.1.0.11424_install.bfb > /dev/rshim0/boot
 	expect -c '
 		spawn minicom --baudrate 115200 --device /dev/rshim0/console
@@ -96,9 +96,9 @@ function pxe_install() {
 	test -n "${uplink_interface}" || die "need a default route"
 
 	cd /tmp
-	wget http://download.eng.bos.redhat.com/released/RHEL-8/8.3.0/BaseOS/aarch64/iso/RHEL-8.3.0-20201009.2-aarch64-dvd1.iso
-	wget --no-check-certificate https://gitlab.cee.redhat.com/egarver/smart-nic-poc/-/raw/master/provision/bf2/RHEL8-bluefield.ks
-	wget --no-check-certificate https://gitlab.cee.redhat.com/egarver/smart-nic-poc/-/raw/master/provision/bf2/PXE_setup_RHEL_install_over_mlx.sh
+	wget -c http://download.eng.bos.redhat.com/released/RHEL-8/8.3.0/BaseOS/aarch64/iso/RHEL-8.3.0-20201009.2-aarch64-dvd1.iso
+	wget -c --no-check-certificate https://gitlab.cee.redhat.com/egarver/smart-nic-poc/-/raw/master/provision/bf2/RHEL8-bluefield.ks
+	wget -c --no-check-certificate https://gitlab.cee.redhat.com/egarver/smart-nic-poc/-/raw/master/provision/bf2/PXE_setup_RHEL_install_over_mlx.sh
 	chmod +x PXE_setup_RHEL_install_over_mlx.sh
 	iptables -F
 	./PXE_setup_RHEL_install_over_mlx.sh -i RHEL-8.3.0-20201009.2-aarch64-dvd1.iso -p tmfifo -k RHEL8-bluefield.KS
