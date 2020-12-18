@@ -33,11 +33,12 @@ function mst_install {
 
 	wait
 
-	cd /tmp || die "cd /tmp"
+	pushd /tmp
 	tar xf $MFT_VER-rpm.tgz
-	cd $MFT_VER-rpm || die "cd $MFT_VER-rpm"
+	cd $MFT_VER-rpm
 	./install.sh
 	mst start
+	popd
 }
 
 function rshim_install {
@@ -48,7 +49,7 @@ function rshim_install {
 
 	yum install -y automake autoconf elfutils-libelf-devel fuse-devel gcc git kernel-modules-extra libusb-devel make minicom pciutils-devel rpm-build tmux
 	echo "pu rtscts           No" > /root/.minirc.dfl
-	cd /tmp || die "cd /tmp"
+	pushd /tmp
 	git clone https://github.com/Mellanox/rshim-user-space.git
 	cd rshim-user-space || die "cd rshim-user-space"
 	./bootstrap.sh
@@ -66,6 +67,7 @@ function rshim_install {
 	systemctl enable --now rshim
 	systemctl status rshim
 
+	popd
 }
 
 function firmware_update {
@@ -105,10 +107,10 @@ function pxe_install() {
 	local uplink_interface="$(ip route |grep ^default | sed 's/.*dev \([^ ]\+\).*/\1/')"
 	test -n "${uplink_interface}" || die "need a default route"
 
-	cd /tmp
-	wget -c http://download.eng.bos.redhat.com/released/RHEL-8/8.3.0/BaseOS/aarch64/iso/RHEL-8.3.0-20201009.2-aarch64-dvd1.iso
+	RHEL_ISO="http://download.eng.bos.redhat.com/released/RHEL-8/8.3.0/BaseOS/aarch64/iso/RHEL-8.3.0-20201009.2-aarch64-dvd1.iso"
+	wget -O "/tmp/${RHEL_ISO##*/}" -c http://download.eng.bos.redhat.com/released/RHEL-8/8.3.0/BaseOS/aarch64/iso/RHEL-8.3.0-20201009.2-aarch64-dvd1.iso
 	iptables -F
-	bash ./PXE_setup_RHEL_install_over_mlx.sh -i RHEL-8.3.0-20201009.2-aarch64-dvd1.iso -p tmfifo -k RHEL8-bluefield.ks
+	bash ./PXE_setup_RHEL_install_over_mlx.sh -i "/tmp/${RHEL_ISO##*/}" -p tmfifo -k RHEL8-bluefield.ks
 	echo BOOT_MODE 1 > /dev/rshim0/misc
 	echo SW_RESET 1 > /dev/rshim0/misc
 	cat << EOF
