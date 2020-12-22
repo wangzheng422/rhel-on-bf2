@@ -17,7 +17,7 @@ else
     MFT_VER_PART=x86_64
 fi
 
-VER_PART=$(uname -r | cut -d"-" -f2 | cut -d. -f1,2)
+VER_PART=$(uname -r | cut -d"-" -f2 | sed s/\.$(uname -m)//g)
 
 curl -kO https://download-node-02.eng.bos.redhat.com/brewroot/packages/kernel/4.18.0/$VER_PART/$(uname -m)/kernel-devel-$(uname -r).rpm
 curl -kO https://download-node-02.eng.bos.redhat.com/brewroot/packages/zstd/1.4.4/1.el8/$(uname -m)/zstd-1.4.4-1.el8.$(uname -m).rpm
