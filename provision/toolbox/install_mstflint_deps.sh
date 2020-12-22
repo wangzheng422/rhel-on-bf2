@@ -17,6 +17,12 @@ else
     MFT_VER_PART=x86_64
 fi
 
+# workaround for problem with mismatch between version glibc{,-utils} in toolbox container on openshift
+if [[ $(dnf install gcc 2>&1  | grep -c "cannot install both glibc") -ne 0 ]]; then
+  curl -kO http://download.eng.bos.redhat.com/brewroot/vol/rhel-8/packages/glibc/2.28/127.el8/$(uname -m)/glibc-utils-2.28-127.el8.$(uname -m).rpm
+  dnf install -y glibc-utils-2.28-127.el8.$(uname -m).rpm
+fi
+
 VER_PART=$(uname -r | cut -d"-" -f2 | sed s/\.$(uname -m)//g)
 
 curl -kO https://download-node-02.eng.bos.redhat.com/brewroot/packages/kernel/4.18.0/$VER_PART/$(uname -m)/kernel-devel-$(uname -r).rpm
