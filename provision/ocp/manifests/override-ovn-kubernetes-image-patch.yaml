@@ -1,0 +1,10 @@
+spec:
+  template:
+    spec:
+      containers:
+      - name: network-operator
+        env:
+        - name: OVN_IMAGE
+          # build from manifests/Dockerfile with branch https://github.com/moshe010/ovn-kubernetes/tree/bf_support
+          value: quay.io/zshi/ovn-daemonset:bluefield
+

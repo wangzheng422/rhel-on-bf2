@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rshim
+spec:
+  hostNetwork: true
+  hostPID: true
+  nodeSelector:
+    kubernetes.io/hostname: worker-h09
+  containers:
+  - name: rshim
+    image: quay.io/zshi/rshim:bluefield
+    imagePullPolicy: IfNotPresent
+    command: [ "/bin/bash", "-c", "--" ]
+    args: ["rpm -ivh /tmp/mybuildtest/RPMS/x86_64/*; /usr/sbin/rshim; while true; do sleep 300000; done;"]
+    securityContext:
+      privileged: true
+      procMount: Default
+      runAsUser: 0
+    volumeMounts:
+    - mountPath: /host
+      name: host
+    - mountPath: /dev
+      name: dev
+  volumes:
+  - hostPath:
+      path: /
+      type: Directory
+    name: host
+  - hostPath:
+      path: /dev
+      type: Directory
+    name: dev
