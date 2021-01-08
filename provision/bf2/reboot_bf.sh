@@ -22,13 +22,26 @@
 # wait for card to come up
 modprobe -rv mlx5_{ib,core}
 wait 2
-echo "Rebooting SoC..."
-ssh root@10.1.0.2 reboot
+echo "=== STATUS === Rebooting all BF2 cards..."
+
+ALIVE=""
+for I in $(seq 10 20); do
+	ssh root@172.31.100.${I} true || continue
+	ALIVE="${ALIVE} ${I}"
+done
+
+test -z "${ALIVE}" && { printf "!!! ERROR !!! No BF2s are alive\n"; exit 1; }
+
+for I in ${ALIVE}; do
+	ssh root@172.31.100.${I} reboot
+done
+printf "=== STATUS === %s" "waiting for connection to Bluefield..."
 wait 10
-printf "%s" "waiting for connection to Bluefield..."
-while ! timeout 0.2 ping -c 1 -n 10.1.0.2 &> /dev/null
-do
-    printf "%c" "."
+for I in ${ALIVE}; do
+	while ! timeout 0.2 ping -c 1 -n 172.31.100.${I} &> /dev/null
+	do
+		printf "%c" "."
+	done
 done
 wait 5
 modprobe -av mlx5_{ib,core}
