@@ -26,7 +26,7 @@ openvswitch2.13-2.13.0-67.el8fdp.aarch64.rpm \
 python3-openvswitch2.13-2.13.0-67.el8fdp.aarch64.rpm \
 openvswitch2.13-devel-2.13.0-67.el8fdp.aarch64.rpm \
 openvswitch-selinux-extra-policy-1.0-23.el8fdp.noarch.rpm \
-kernel-modules-extra-$(uname -r)
+kernel-modules-extra-$(uname -r).rpm
 
 systemctl enable openvswitch
 systemctl start openvswitch
