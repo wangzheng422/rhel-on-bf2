@@ -195,7 +195,7 @@ function sriov_check {
 				mlxconfig -d "$MST".1 s INTERNAL_CPU_MODEL=1
 				echo "EMBEDDED_CPU mode will be enabled on next boot. Power cycle the system to enable it."
 			fi
-			exit 1
+			bash ./reboot_bf.sh || exit 1
 		fi
 
 	done
