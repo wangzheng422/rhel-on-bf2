@@ -9,6 +9,9 @@
 
 yum install -y wget
 
+# Ignore SSL certificate errors
+grep -q "sslverify=false" /etc/yum.conf || echo "sslverify=false" >> /etc/yum.conf
+
 VER_PART=$(uname -r | cut -d"-" -f2 | sed s/\.$(uname -m)//g)
 
 wget -P /tmp http://download.eng.bos.redhat.com/brewroot/vol/rhel-8/packages/openvswitch2.13/2.13.0/67.el8fdp/aarch64/openvswitch2.13-2.13.0-67.el8fdp.aarch64.rpm &> /dev/null &
