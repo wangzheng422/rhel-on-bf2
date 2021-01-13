@@ -27,7 +27,7 @@ logging.basicConfig(level=logging.INFO)
 
 def build_test_packet():
     logging.info("Packet: Using scapy to build the test packet")
-    L2 = inet.Ether(src="52:54:00:C6:10:10", dst="04:3f:72:f4:4a:24")
+    L2 = inet.Ether(src="52:54:00:C6:10:10", dst="04:3f:72:f4:49:44")
     L3 = inet.IP(src="192.168.1.102", dst="192.168.1.101")
     L4 = inet.UDP(sport=1234, dport=1234)
     payload = "X"*22
@@ -51,14 +51,14 @@ def main():
     xm = XenaManager(xsocket, 'user1', "xena")
 
     # add port 0 and configure
-    port0 = xm.add_port(4, 1)
+    port0 = xm.add_port(4, 0)
     if not port0:
         print("Failed to add port")
         sys.exit(-1)
 
     port0.set_pause_frames_off()
     # add port 1 and configure
-    port1 = xm.add_port(4, 0)
+    port1 = xm.add_port(4, 1)
     if not port1:
         print("Failed to add port")
         sys.exit(-1)
@@ -81,7 +81,7 @@ def main():
     time.sleep(4)
 
     # fetch stats
-    for i in range(1,10):
+    for i in range(20):
         port0.grab_all_rx_stats()
         time.sleep(1)
 
@@ -89,13 +89,11 @@ def main():
     port0.stop_traffic()
 
     full_stats = port0.dump_all_rx_stats()
-    full_stats2 = port0.dump_all_rx_stats()
 
-    for (k, v) in full_stats.items():
-        print(k, v)
+    time_points = sorted(full_stats.keys())
 
-    for (k, v) in full_stats2.items():
-        print(k, v)
+    for t in time_points:
+        print(str(t) + "," + str(full_stats[t]["pr_notpld"]["pps"]))
 
     del xm
     del xsocket
