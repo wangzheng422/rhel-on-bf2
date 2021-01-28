@@ -148,7 +148,7 @@ function sriov_check {
 	status "Checking usability of SRIOV"
 
 	mst start
-	MST_LIST=($(mst status | grep -Po "/dev/mst/[\w\d]+"))
+	MST_LIST=$(mst status | grep -Po "/dev/mst/mt41686[\w\d]+")
 
 	for MST in ${MST_LIST[@]}; do
 		if mlxconfig -d "$MST" q | grep SRIOV_EN | grep -q "True\|1"; then
