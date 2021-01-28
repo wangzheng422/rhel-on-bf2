@@ -121,12 +121,17 @@ function pxe_install() {
 			timeout { send ""; exp_continue }
 		}
 		set timeout 600
-		interact {
-			\015 { send "\r"; return; }
-			* { exp_continue }
-		}
-		expect {
-			"Install" { send "\r"; }
+		# Sometimes PXE fails, hence the while loop.
+		#
+		while {1} {
+			interact {
+				\015 { send "\r"; return; }
+				* { exp_continue }
+			}
+			expect {
+				"Boot Manager" { send "OBOB"; send "\r";}
+				"Install" { send "\r"; break; }
+			}
 		}
 	'
 	reset # reset console, trashed after expect/minicom
