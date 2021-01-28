@@ -12,7 +12,7 @@ if [ "$#" -ne 2 ]; then
         exit
 fi
 
-PCI=($(lspci -D | grep "Eth.*nox" | cut -d' ' -f1))
+PCI=($(lspci -D | grep "Eth.*nox.*Blue" | cut -d' ' -f1))
 for i in ${PCI[@]}; do
         if [ $(ls /sys/bus/pci/devices/$i/net) = $1 ]
         then
