@@ -1,15 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
-# rshim installation should be done first
-# Usage:
-# To execute on remote host:
-# 	ssh root@hostname 'bash -s' < mst_install.sh [--install]
-# Local host:
-# 	./mst_install.sh [--install]
-#
-
 function info {
 	printf "=== INFO === %s\n" "$@"
 }
