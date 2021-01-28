@@ -19,6 +19,8 @@
 #
 # set up ssh key access between the two
 
+SUBNET="172.31.100"
+
 # wait for card to come up
 modprobe -rv mlx5_{ib,core}
 wait 2
@@ -26,19 +28,19 @@ echo "=== STATUS === Rebooting all BF2 cards..."
 
 ALIVE=""
 for I in $(seq 10 20); do
-	ssh root@172.31.100.${I} true || continue
+	ssh root@${SUBNET}.${I} true || continue
 	ALIVE="${ALIVE} ${I}"
 done
 
 test -z "${ALIVE}" && { printf "!!! ERROR !!! No BF2s are alive\n"; exit 1; }
 
 for I in ${ALIVE}; do
-	ssh root@172.31.100.${I} reboot
+	ssh root@${SUBNET}.${I} reboot
 done
 printf "=== STATUS === %s" "waiting for connection to Bluefield..."
 wait 10
 for I in ${ALIVE}; do
-	while ! timeout 0.2 ping -c 1 -n 172.31.100.${I} &> /dev/null
+	while ! timeout 0.2 ping -c 1 -n ${SUBNET}.${I} &> /dev/null
 	do
 		printf "%c" "."
 	done
