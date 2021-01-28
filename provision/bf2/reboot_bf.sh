@@ -28,7 +28,7 @@ echo "=== STATUS === Rebooting all BF2 cards..."
 
 ALIVE=""
 for I in $(seq 10 20); do
-	ssh root@${SUBNET}.${I} true || continue
+	ping -w 1 ${SUBNET}.${I} || continue
 	ALIVE="${ALIVE} ${I}"
 done
 
