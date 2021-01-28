@@ -96,7 +96,7 @@ setup_rshim()
     nmcli conn delete ${NETDEV}
     rm /etc/sysconfig/network-scripts/ifcfg-${NETDEV}
     nmcli conn add type tun mode tap con-name ${NETDEV} ifname ${NETDEV} autoconnect yes ip4 ${REPO_IP}
-    nmcli conn modify tmfifo_net0 ipv4.routes 172.31.100.0/24
+    nmcli conn modify tmfifo_net0 ipv4.routes ${SUBNET}.0/24
     systemctl restart NetworkManager
     nmcli conn up ${NETDEV}
 
