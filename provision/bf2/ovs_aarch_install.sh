@@ -7,8 +7,6 @@
 # 	./ovs_aarch_install.sh
 #
 
-yum install -y wget
-
 # Ignore SSL certificate errors
 grep -q "sslverify=false" /etc/yum.conf || echo "sslverify=false" >> /etc/yum.conf
 
@@ -20,12 +18,7 @@ OVS_RPMS="openvswitch2.13/2.13.0/86.el8fdp/aarch64//openvswitch2.13-2.13.0-86.el
           openvswitch2.13/2.13.0/86.el8fdp/aarch64//openvswitch2.13-devel-2.13.0-86.el8fdp.aarch64.rpm
           openvswitch-selinux-extra-policy/1.0/28.el8fdp/noarch/openvswitch-selinux-extra-policy-1.0-28.el8fdp.noarch.rpm"
 
-wget -c -P "/tmp/" -B "${BREW_ROOT}" ${OVS_RPMS}
-for RPM in ${OVS_RPMS}; do
-	dnf install -y "/tmp/${RPM#*/}"
-done
-
-dnf install -y kernel-modules-extra
+dnf install -y kernel-modules-extra $(for I in ${OVS_RPMS}; do echo ${BREW_ROOT}${I}; done)
 
 systemctl enable openvswitch
 systemctl start openvswitch
