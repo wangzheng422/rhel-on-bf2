@@ -15,34 +15,35 @@ setenforce 0
 ### Configure BF device in switchdev mode ###
 
 # Note: unload the mellanox drivers on the host before running switchdev config
+# https://bugzilla.redhat.com/show_bug.cgi?id=1923760
 
 # Unload mlx drivers on host
-# modprobe -rv mlx5_{ib,core}
+#modprobe -rv mlx5_{ib,core}
 
 # Set device in switchdev mode
 /usr/bin/connectx_eswitch_mode_config.sh
 
 # Reload mlx drivers on host
-# modprobe -av mlx5_{ib,core}
+#modprobe -av mlx5_{ib,core}
 
 # Provision SR-IOV VFs on the host
-# echo 2 > /sys/class/net/<host-bf-int>/device/sriov_numvfs
+#echo 2 > /sys/class/net/<host-bf-int>/device/sriov_numvfs
 
 # Rename VF representor interface names
 # Ovn smart nic cni assumes the VF rep names in the format of pfxvfy
 # where x is last bit of pf pci address, y is vf index number
 # Change the interface names according to your own environment.
 
-# ip link set eth3 down
-# ip link set eth4 down
-# ip link set eth3 name pf0vf0
-# ip link set eth4 name pf0vf1
+#ip link set eth3 down
+#ip link set eth4 down
+#ip link set eth3 name pf0vf0
+#ip link set eth4 name pf0vf1
 
 
 ### Configure BF management port (ssh) ###
 
 # Run below cmd on BF if eth0 is not yet managed by NM
-# nmcli con add connection.interface-name eth0 type ethernet connection.id eth0
+#nmcli con add connection.interface-name eth0 type ethernet connection.id eth0
 
 nmcli con mod eth0 ipv4.addresses 10.1.0.2/24
 nmcli con mod eth0 ipv4.method manual
@@ -50,13 +51,13 @@ nmcli con up eth0
 nmcli con show
 
 # Assign IP address to tmfifo_net0 (directly connected with eth0 on BF) on host
-# ip addr add 10.1.0.1/24 dev tmfifo_net0
+#ip addr add 10.1.0.1/24 dev tmfifo_net0
 
 # Login to BF via management port
-# ssh root@10.1.0.2  passwd: bluefield
+#ssh root@10.1.0.2  passwd: bluefield
 
 # Run below cmd if eth1 is not yet a bridge port
-# nmcli con add type bridge-slave ifname eth1 master br0 connection.id br0-port1
+#nmcli con add type bridge-slave ifname eth1 master br0 connection.id br0-port1
 
 
 ### Configure openvswitch on BF ###
@@ -77,9 +78,9 @@ systemctl start openvswitch
 # This is done by MCO in normal openshift deployment, need to be manually added on BF.
 # All below commands can be replaced by equivalent nmcli commands.
 
-# bridge name: br-ex
-# bridge uplink port: eth1
-# bridge hostlink port: enp3s0f0np0
+#bridge name: br-ex
+#bridge uplink port: eth1
+#bridge hostlink port: enp3s0f0np0
 
 ovs-vsctl add-br br-ex
 ovs-vsctl add-port br-ex eth1
@@ -126,7 +127,7 @@ oc -n openshift-ovn-kubernetes exec <ovnkube-node-9l99q> -c ovnkube-node -- cat 
 sed -i -e '$a192.168.111.5	api-int.sriov.ovn.testing' /etc/hosts
 
 # Run ovn-controller container
-# bluefield_ovn_node.sh
+#bluefield_ovn_node.sh
 
 # Run ovnkube-node container
-# bluefield_ovn_controller.sh
+#bluefield_ovn_controller.sh
