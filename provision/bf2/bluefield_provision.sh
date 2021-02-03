@@ -205,9 +205,6 @@ while getopts "armfsp" opt; do
 	    pxe_install
             ;;
 
-        c)
-	    mst_check
-            ;;
         r)
 	    rshim_install
             ;;
