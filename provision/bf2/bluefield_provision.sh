@@ -13,10 +13,9 @@ function die {
 	exit 1
 }
 
-function mst_install {
-	status "Installing MST tools"
+function mstflint_install {
+	status "Installing mstflint tools"
 	dnf install -y http://download.eng.bos.redhat.com/brewroot/vol/rhel-8/packages/mstflint/4.15.0/1.el8/x86_64/mstflint-4.15.0-1.el8.x86_64.rpm
-	mst start
 }
 
 function rshim_install {
@@ -150,34 +149,33 @@ function pxe_install() {
 
 
 function sriov_check {
-	status "Checking usability of SRIOV"
-
-	mst start
-	MST_LIST=$(mst status | grep -Po "/dev/mst/mt41686[\w\d]+")
-
-	for MST in ${MST_LIST[@]}; do
-		if mlxconfig -d "$MST" q | grep SRIOV_EN | grep -q "True\|1"; then
+	NEED_REBOOT=""
+	PCI_LIST=$(lshw -class network -businfo |grep "BlueField-2" |sed 's/pci@\([^ ]\+\).*/\1/')
+	
+	for PCI in ${PCI_LIST}; do
+		status "Checking usability of SRIOV for PCI ${PCI}"
+		if mstconfig -d "$PCI" q | grep SRIOV_EN | grep -q "True\|1"; then
 			echo "SRIOV enabled"
 		else
 			echo "SRIOV needs to be enabled in BIOS"
 		fi
 
-		if mlxconfig -e -d "$MST"  q | grep -i internal |  cut -d' ' -f28 | grep -q EMBEDDED_CPU\(1\); then
+		if mstconfig -e -d "$PCI"  q | grep -i internal |  cut -d' ' -f28 | grep -q EMBEDDED_CPU\(1\); then
 			echo "EMBEDDED_CPU mode enabled"
 		else
 			echo "SEPARATED_HOST mode enabled, cannot proceed with VF setup"
-			if mlxconfig -e -d "$MST" q | grep -i internal | cut -d' ' -f29 | grep -q EMBEDDED_CPU\(1\); then
+			if mstconfig -e -d "$PCI" q | grep -i internal | cut -d' ' -f29 | grep -q EMBEDDED_CPU\(1\); then
 				echo "EMBEDDED_CPU mode is set to be enabled on next boot. Power cycle the system to enable it."
 			else
 				echo "Enabling EMBEDDED_CPU mode"
-				mlxconfig -d "$MST" s INTERNAL_CPU_MODEL=1
-				mlxconfig -d "$MST".1 s INTERNAL_CPU_MODEL=1
+				NEED_REBOOT=yes
+				mstconfig -d "$PCI" s INTERNAL_CPU_MODEL=1
 				echo "EMBEDDED_CPU mode will be enabled on next boot. Power cycle the system to enable it."
 			fi
-			bash ./reboot_bf.sh || exit 1
 		fi
-
 	done
+
+	test -n "${NEED_REBOOT}" && bash ./reboot_bf.sh || exit 1
 }
 
 function help {
@@ -199,7 +197,7 @@ while getopts "armfsp" opt; do
     case $opt in
         a)
 	    rshim_install
-	    mst_install
+	    mstflint_install
 	    firmware_update
 	    sriov_check
 	    pxe_install
@@ -209,7 +207,7 @@ while getopts "armfsp" opt; do
 	    rshim_install
             ;;
         m)
-	    mst_install
+	    mstflint_install
             ;;
         f)
 	    firmware_update
