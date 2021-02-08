@@ -20,31 +20,11 @@ function mstflint_install {
 
 function rshim_install {
 	status "Installing rshim driver and tools"
-	if [ "$(cut -d' ' -f 6 < /etc/redhat-release)" = 8.2 ]; then
-		dnf install -y http://download.eng.bos.redhat.com/composes/nightly-rhel-8/RHEL-8/latest-RHEL-8/compose/CRB/x86_64/os/Packages/libusb-devel-0.1.5-12.el8.x86_64.rpm
-	fi
-
-	yum install -y automake autoconf elfutils-libelf-devel fuse-devel gcc git kernel-modules-extra libusb-devel make minicom pciutils-devel rpm-build tmux
-	echo "pu rtscts           No" > /root/.minirc.dfl
-	pushd /tmp
-	git clone https://github.com/Mellanox/rshim-user-space.git
-	cd rshim-user-space || die "cd rshim-user-space"
-	./bootstrap.sh
-	./configure
-
-
-	rpm_topdir=/tmp/rshim_provision_build
-	/bin/rm -rf "$(rpm_topdir)"
-	mkdir -p $rpm_topdir/{RPMS,BUILD,SRPM,SPECS,SOURCES}
-	version=$(grep "Version:" *.spec | head -1 | awk '{print $NF}')
-	git archive --format=tgz --prefix=rshim-"${version}"/ HEAD > $rpm_topdir/SOURCES/rshim-"${version}".tar.gz
-	rpmbuild -ba --nodeps --define "_topdir $rpm_topdir" --define 'dist %{nil}' *.spec
-
-	rpm -ivh $rpm_topdir/RPMS/*/*rpm
+	dnf --nogpgcheck --assumeyes --repofrompath "rhel84-baseos,http://download.eng.bos.redhat.com/nightly/rhel-8/RHEL-8/latest-RHEL-8.4/compose/BaseOS/x86_64/os/" \
+	    --repofrompath "rhel84-appstream,http://download.eng.bos.redhat.com/nightly/rhel-8/RHEL-8/latest-RHEL-8.4/compose/AppStream/x86_64/os/" \
+	install rshim
 	systemctl enable --now rshim
 	systemctl status rshim
-
-	popd
 }
 
 function firmware_update {
