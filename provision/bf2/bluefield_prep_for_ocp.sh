@@ -32,10 +32,19 @@ for I in $(seq 10 20); do
 	                            install libreswan
 
 	# update BF2 kernel to 8.4 kernel for ipsec offload
-	ssh root@${SUBNET}.${I} dnf --nogpgcheck --assumeyes \
-	                            --repofrompath "rhel84-baseos,http://download.eng.bos.redhat.com/nightly/rhel-8/RHEL-8/latest-RHEL-8.4/compose/BaseOS/aarch64/os/" \
-	                            --repofrompath "rhel84-appstream,http://download.eng.bos.redhat.com/nightly/rhel-8/RHEL-8/latest-RHEL-8.4/compose/AppStream/aarch64/os/" \
-	                            upgrade kernel kernel-modules-extra
+	# ssh root@${SUBNET}.${I} dnf --nogpgcheck --assumeyes \
+	#                             --repofrompath "rhel84-baseos,http://download.eng.bos.redhat.com/nightly/rhel-8/RHEL-8/latest-RHEL-8.4/compose/BaseOS/aarch64/os/" \
+	#                             --repofrompath "rhel84-appstream,http://download.eng.bos.redhat.com/nightly/rhel-8/RHEL-8/latest-RHEL-8.4/compose/AppStream/aarch64/os/" \
+	#                             upgrade kernel kernel-modules-extra
+
+	BASE_URL=http://file.rdu.redhat.com/~bnemeth/bz1926098/ \
+	VER=4.18.0-283.el8.bz1926098.test.dt3.aarch64
+	ssh root@${SUBNET}.${I} dnf install -y $BASE_URL/kernel-$VER.rpm \
+                               $BASE_URL/kernel-core-$VER.rpm \
+							   $BASE_URL/kernel-devel-$VER.rpm \
+							   $BASE_URL/kernel-modules-$VER.rpm \
+							   $BASE_URL/kernel-modules-extra-$VER.rpm \
+							   $BASE_URL/kernel-modules-internal-$VER.rpm
 done
 
 # must reboot cards due to new kernel
