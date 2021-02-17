@@ -15,7 +15,7 @@ function die {
 
 function mstflint_install {
 	status "Installing mstflint tools"
-	dnf install -y http://download.eng.bos.redhat.com/brewroot/vol/rhel-8/packages/mstflint/4.15.0/1.el8/x86_64/mstflint-4.15.0-1.el8.x86_64.rpm
+	dnf install -y mstflint
 }
 
 function rshim_install {
@@ -35,9 +35,10 @@ function firmware_update {
 	fi
 	dnf -y install expect
 
-	wget -c http://www.mellanox.com/downloads/BlueField/BlueField-3.1.0.11424/BlueField-3.1.0.11424_install.bfb
+	BFB_IMAGE=BlueField-3.5.1.11601_install.bfb
+	wget -c  https://www.mellanox.com/downloads/BlueField/BlueField-3.5.1.11601/$BFB_IMAGE
 	status "Sending firmware to BF2. Please wait."
-	cat BlueField-3.1.0.11424_install.bfb > /dev/rshim0/boot
+	cat $BFB_IMAGE > /dev/rshim0/boot
 	expect -c '
 		spawn minicom --baudrate 115200 --device /dev/rshim0/console
 		expect {
@@ -131,7 +132,7 @@ function pxe_install() {
 function sriov_check {
 	NEED_REBOOT=""
 	PCI_LIST=$(lshw -class network -businfo |grep "BlueField-2" |sed 's/pci@\([^ ]\+\).*/\1/')
-	
+
 	for PCI in ${PCI_LIST}; do
 		status "Checking usability of SRIOV for PCI ${PCI}"
 		if mstconfig -d "$PCI" q | grep SRIOV_EN | grep -q "True\|1"; then
