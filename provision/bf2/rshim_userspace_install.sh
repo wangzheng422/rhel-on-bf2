@@ -41,4 +41,4 @@ rpmbuild -ba --nodeps --define "_topdir $rpm_topdir" --define 'dist %{nil}' *.sp
 
 rpm -ivh $rpm_topdir/RPMS/*/*rpm
 systemctl enable --now rshim
-systemctl status rshim
+systemctl status rshim --no-pager

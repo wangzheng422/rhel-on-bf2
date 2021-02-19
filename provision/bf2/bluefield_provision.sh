@@ -24,7 +24,7 @@ function rshim_install {
 	    --repofrompath "rhel84-appstream,http://download.eng.bos.redhat.com/nightly/rhel-8/RHEL-8/latest-RHEL-8.4/compose/AppStream/x86_64/os/" \
 	install rshim
 	systemctl enable --now rshim
-	systemctl status rshim
+	systemctl status rshim --no-pager
 }
 
 function firmware_update {

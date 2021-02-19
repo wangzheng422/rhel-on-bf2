@@ -139,7 +139,7 @@ EOF
 
         systemctl enable rshim
         systemctl start rshim
-        systemctl status rshim
+        systemctl status rshim --no-pager
     fi
 }
 
