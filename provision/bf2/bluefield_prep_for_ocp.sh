@@ -7,7 +7,7 @@ VER=4.18.0-287.el8.bz1926098.bf2.poc.v2.dt3.aarch64
 
 SUBNET="172.31.100"
 if [ ! -f bluefield_key ]; then
-	ssh-keygen -t rsa -N "" -f bluefield
+	ssh-keygen -t rsa -N "" -f bluefield_key
 fi
 
 for I in $(seq 10 20); do
