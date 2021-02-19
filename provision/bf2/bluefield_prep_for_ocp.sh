@@ -45,8 +45,8 @@ for I in $(seq 10 20); do
 	#                             --repofrompath "rhel84-appstream,http://download.eng.bos.redhat.com/nightly/rhel-8/RHEL-8/latest-RHEL-8.4/compose/AppStream/aarch64/os/" \
 	#                             upgrade kernel kernel-modules-extra
 
-	BASE_URL=http://file.rdu.redhat.com/~bnemeth/9615/34969615/ \
-	VER=4.18.0-287.el8.bz1926098.test2.dt1.aarch64
+	BASE_URL=http://file.rdu.redhat.com/~bnemeth/poc_kernel \
+	VER=4.18.0-287.el8.bz1926098.bf2.poc.v2.dt3.aarch64 \
 	ssh root@${SUBNET}.${I} -i bluefield_key dnf install -y $BASE_URL/kernel-$VER.rpm \
                                $BASE_URL/kernel-core-$VER.rpm \
 							   $BASE_URL/kernel-devel-$VER.rpm \
