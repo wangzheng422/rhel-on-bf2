@@ -31,17 +31,6 @@ sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 # Provision SR-IOV VFs on the host
 #echo 2 > /sys/class/net/<host-bf-int>/device/sriov_numvfs
 
-# Rename VF representor interface names
-# Ovn smart nic cni assumes the VF rep names in the format of pfxvfy
-# where x is last bit of pf pci address, y is vf index number
-# Change the interface names according to your own environment.
-
-#ip link set eth3 down
-#ip link set eth4 down
-#ip link set eth3 name pf0vf0
-#ip link set eth4 name pf0vf1
-
-
 ### Configure BF management port (ssh) ###
 
 # Run below cmd on BF if eth0 is not yet managed by NM
