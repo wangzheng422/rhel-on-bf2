@@ -25,6 +25,7 @@ for I in $(seq 10 20); do
 	# enable switchdev mode and create VFs
 	bash ./add_connectx_eswitch_mode_config_service.sh
 	BF2_PORT1=$(lshw -class network -businfo |grep "BlueField-2" |sort |head -n 1 |awk '{print $2}')
+	bash ./vf_setup.sh ${BF2_PORT1} 0
 	bash ./vf_setup.sh ${BF2_PORT1} 5
 
 	HOST_PFr=$(ssh root@${SUBNET}.${I} 'ip -d link |grep -B 1 "portname pf0 " |head -n 1 |awk "{print \$2}" |tr -d :')
