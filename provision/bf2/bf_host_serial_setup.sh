@@ -41,4 +41,4 @@ EOF
 
 systemctl daemon-reload
 systemctl enable --now ser2net.service
-systemctl status ser2net.service --no-pager
+systemctl status ser2net.service --no-pager -l

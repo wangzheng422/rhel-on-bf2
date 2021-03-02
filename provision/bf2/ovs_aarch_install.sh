@@ -21,4 +21,4 @@ dnf install -y kernel-modules-extra $(for I in ${OVS_RPMS}; do echo ${BREW_ROOT}
 
 systemctl enable openvswitch
 systemctl start openvswitch
-systemctl status openvswitch --no-pager
+systemctl status openvswitch --no-pager -l

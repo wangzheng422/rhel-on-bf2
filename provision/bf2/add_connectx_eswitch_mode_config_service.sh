@@ -51,4 +51,4 @@ systemctl enable connectx_eswitch_mode_config
 
 echo "Done"
 echo "Checking service status:"
-systemctl status connectx_eswitch_mode_config --no-pager
+systemctl status connectx_eswitch_mode_config --no-pager -l
