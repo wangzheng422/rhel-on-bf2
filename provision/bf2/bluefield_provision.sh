@@ -15,7 +15,7 @@ function die {
 
 function mstflint_install {
 	status "Installing mstflint tools"
-	dnf install -y mstflint
+	dnf install -y http://download.eng.bos.redhat.com/brewroot/packages/mstflint/4.15.0/1.el8/x86_64/mstflint-4.15.0-1.el8.x86_64.rpm
 }
 
 function rshim_install {
