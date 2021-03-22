@@ -59,3 +59,4 @@ def get_current_total_util(l):
     print(tot_all)
 
 get_current_total_util(sys.argv[1])
+
