@@ -1,6 +1,3 @@
-# Install OS instead of upgrade
-install
-
 # System language
 lang en_US.UTF-8
 
@@ -38,7 +35,7 @@ skipx
 firstboot --disabled
 
 # Network information
-network --bootproto=dhcp --hostname=bluefield-soc.mlx
+network --bootproto=dhcp --hostname=bluefield-soc.mlx --device=eth0 --activate
 
 # Bootloader/partition configuration
 ignoredisk --only-use=mmcblk0
@@ -64,6 +61,8 @@ vim
 ethtool
 git
 grubby
+xterm
+NetworkManager-config-server
 %end
 
 %post --interpreter /bin/bash

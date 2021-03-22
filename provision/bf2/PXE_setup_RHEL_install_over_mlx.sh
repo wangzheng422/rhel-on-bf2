@@ -297,7 +297,7 @@ esac
 echo "Generate the grub.cfg..."
 grub_opts="inst.repo=http://${REPO_IP}/${DISTRO_VER}/ console=tty0 console=tty1 console=ttyS0,115200 console=ttyS1,115200"
 if [ ${ENABLE_KS} -eq 1 ]; then
-    grub_opts="${grub_opts} ks=http://${REPO_IP}/ks_${DISTRO_VER}/kickstart.ks"
+    grub_opts="${grub_opts} inst.ks=http://${REPO_IP}/ks_${DISTRO_VER}/kickstart.ks"
 fi
 case "${PROTOCOL}" in
     ETH)
