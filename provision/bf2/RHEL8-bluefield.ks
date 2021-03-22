@@ -86,7 +86,7 @@ tar xf /tmp/beaker_repo.tar -C /etc/yum.repos.d/
 dnf update
 
 bash <(curl -sk https://gitlab.cee.redhat.com/egarver/smart-nic-poc/-/raw/master/provision/bf2/netdev.sh)
-bash <(curl -sk https://gitlab.cee.redhat.com/egarver/smart-nic-poc/-/raw/master/provision/bf2/ovs_aarch_install.sh)
+bash <(curl -sk https://gitlab.cee.redhat.com/egarver/smart-nic-poc/-/raw/master/provision/bf2/ovs_install.sh)
 bash <(curl -sk https://gitlab.cee.redhat.com/egarver/smart-nic-poc/-/raw/master/provision/bf2/add_connectx_eswitch_mode_config_service.sh)
 
 dnf install -y podman

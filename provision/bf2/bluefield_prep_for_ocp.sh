@@ -18,7 +18,7 @@ for I in $(seq 10 20); do
 
 	ssh-copy-id -i bluefield_key root@${SUBNET}.${I}
 
-	ssh root@${SUBNET}.${I} -i bluefield_key 'bash -s' < ./ovs_aarch_install.sh
+	ssh root@${SUBNET}.${I} -i bluefield_key 'bash -s' < ./ovs_install.sh
 
 	# FIXME: This should be a separate script as it's preparing the host.
 	#
