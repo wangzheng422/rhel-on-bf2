@@ -3,7 +3,7 @@ import sys
 import time
 
 def run_mpstat():
-    result = subprocess.run(["mpstat", '-P', "ALL", "1", "1"], stdout=subprocess.PIPE)
+    result = subprocess.run(["mpstat", '-P', "ALL", "10", "1"], stdout=subprocess.PIPE)
     return result.stdout.decode("utf-8")
 
 def list_to_ints(ids):
