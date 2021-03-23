@@ -35,7 +35,16 @@ def set_irq(dev, cores):
     path = "/proc/irq/%s/smp_affinity" % i
     with open(path, "w") as f:
       print("Setting affinity of irq %s to core %d" % (i, c))
-      f.write(hex(c)[2:])
+      hex_code = hex(1 << c)[2:]
+      final = ""
+      added = 0
+      for i in range(len(hex_code)):
+          final = hex_code[len(hex_code) - 1 - i] + final
+          added += 1
+          if added % 8 == 0 and i != len(hex_code) - 1:
+            final = "," + final
+      print(final)
+      f.write(final)
 
 def query_irq(dev):
   irqs = get_irqs(dev)
