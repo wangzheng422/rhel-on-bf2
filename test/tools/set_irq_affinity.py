@@ -28,8 +28,11 @@ def set_irq(dev, cores):
   cores = list_to_ints(cores)
 
   if len(cores) < len(irqs):
-    print("Number of cores is less than number of irqs: %s < %s" % (len(cores), len(irqs)))
-    sys.exit(-1)
+    print("Warning: Number of specified core is less than number of irqs: %s < %s" % (len(cores), len(irqs)))
+    print("         Will use specified cores in round-robin fashion.")
+
+  while len(cores) < len(irqs):
+    cores = cores + cores
 
   for i, c in zip(irqs, cores):
     path = "/proc/irq/%s/smp_affinity" % i
