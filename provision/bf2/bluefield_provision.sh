@@ -61,6 +61,8 @@ function firmware_update {
 function pxe_install() {
 	status "Setting up PXE environment"
 
+	dnf install -y minicom
+
 	# deduced the interface we use to access the internet via the default route
 	local uplink_interface="$(ip route |grep ^default | sed 's/.*dev \([^ ]\+\).*/\1/')"
 	test -n "${uplink_interface}" || die "need a default route"
