@@ -33,7 +33,7 @@ function firmware_update {
 	if ! rpm -qa | grep -q rshim; then
 		rshim_install
 	fi
-	dnf -y install expect
+	dnf -y install expect wget
 
 	BFB_IMAGE=BlueField-3.5.1.11601_install.bfb
 	wget -c  https://www.mellanox.com/downloads/BlueField/BlueField-3.5.1.11601/$BFB_IMAGE
