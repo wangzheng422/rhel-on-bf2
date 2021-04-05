@@ -133,6 +133,7 @@ function pxe_install() {
 
 
 function sriov_check {
+	dnf install -y lshw
 	NEED_REBOOT=""
 	PCI_LIST=$(lshw -class network -businfo |grep "BlueField-2" |sed 's/pci@\([^ ]\+\).*/\1/')
 
