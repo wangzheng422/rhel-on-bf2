@@ -67,7 +67,7 @@ function pxe_install() {
 	local uplink_interface="$(ip route |grep ^default | sed 's/.*dev \([^ ]\+\).*/\1/')"
 	test -n "${uplink_interface}" || die "need a default route"
 
-	RHEL_ISO="http://download.eng.bos.redhat.com/composes/nightly-rhel-8/RHEL-8/RHEL-8.4.0-20210320.n.0/compose/BaseOS/aarch64/iso/RHEL-8.4.0-20210320.n.0-aarch64-dvd1.iso"
+	RHEL_ISO="http://download.eng.bos.redhat.com/released/rhel-8/RHEL-8/8.4.0-Beta-1/BaseOS/aarch64/iso/RHEL-8.4.0-20210309.1-aarch64-dvd1.iso"
 	wget -O "/tmp/${RHEL_ISO##*/}" -c $RHEL_ISO
 	iptables -F
 	bash ./PXE_setup_RHEL_install_over_mlx.sh -i "/tmp/${RHEL_ISO##*/}" -p tmfifo -k RHEL8-bluefield.ks
