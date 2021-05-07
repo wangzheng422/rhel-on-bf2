@@ -19,6 +19,7 @@ def with_unit(v):
 rx_path = "/sys/class/net/%s/statistics/rx_bytes" % dev
 tx_path = "/sys/class/net/%s/statistics/tx_bytes" % dev
 
+once = len(sys.argv) == 3 and sys.argv[2] == "once"
 t = time.time()
 rx_tot = read_all(rx_path)
 tx_tot = read_all(tx_path)
@@ -35,3 +36,6 @@ while True:
     tx_tot = tx_tot2
     t = t2
     print("RX: %s %sbits/sec, TX: %s %sbits/sec" % (rx, rx_u, tx, tx_u))
+
+    if once:
+        break
