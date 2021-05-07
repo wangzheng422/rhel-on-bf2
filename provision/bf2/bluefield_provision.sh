@@ -20,8 +20,7 @@ function mstflint_install {
 
 function rshim_install {
 	status "Installing rshim driver and tools"
-	dnf --nogpgcheck --assumeyes --repofrompath "rhel84-baseos,http://download.eng.bos.redhat.com/nightly/rhel-8/RHEL-8/latest-RHEL-8.4/compose/BaseOS/x86_64/os/" \
-	    --repofrompath "rhel84-appstream,http://download.eng.bos.redhat.com/nightly/rhel-8/RHEL-8/latest-RHEL-8.4/compose/AppStream/x86_64/os/" \
+	dnf --nogpgcheck --assumeyes --repofrompath "rhel84-baseos,http://download.eng.bos.redhat.com/released/rhel-8/RHEL-8/8.4.0-Beta-1/BaseOS/x86_64/os/" \
 	install rshim
 	systemctl enable --now rshim
 	systemctl status rshim --no-pager -l
