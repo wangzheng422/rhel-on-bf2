@@ -13,26 +13,18 @@ function die {
 	exit 1
 }
 
-function mstflint_install {
+function prep {
+	status "Installing rshim driver and tools"
+	dnf install -y rshim expect wget minicom rpm-build lshw
+	systemctl enable --now rshim
+	systemctl status rshim --no-pager -l
+
 	status "Installing mstflint tools"
 	dnf install -y http://download.eng.bos.redhat.com/brewroot/packages/mstflint/4.15.0/1.el8/x86_64/mstflint-4.15.0-1.el8.x86_64.rpm
 }
 
-function rshim_install {
-	status "Installing rshim driver and tools"
-	dnf --nogpgcheck --assumeyes --repofrompath "rhel84-baseos,http://download.eng.bos.redhat.com/released/rhel-8/RHEL-8/8.4.0-Beta-1/BaseOS/x86_64/os/" \
-	install rshim
-	systemctl enable --now rshim
-	systemctl status rshim --no-pager -l
-}
-
 function firmware_update {
 	status "Performing firmware update"
-
-	if ! rpm -qa | grep -q rshim; then
-		rshim_install
-	fi
-	dnf -y install expect wget
 
 	BFB_IMAGE=BlueField-3.5.1.11601_install.bfb
 	wget -c  https://www.mellanox.com/downloads/BlueField/BlueField-3.5.1.11601/$BFB_IMAGE
@@ -59,8 +51,6 @@ function firmware_update {
 
 function pxe_install() {
 	status "Setting up PXE environment"
-
-	dnf install -y minicom rpm-build
 
 	# deduced the interface we use to access the internet via the default route
 	local uplink_interface="$(ip route |grep ^default | sed 's/.*dev \([^ ]\+\).*/\1/')"
@@ -134,7 +124,11 @@ function pxe_install() {
 
 
 function sriov_check {
-	dnf install -y lshw
+
+	if ! rpm -qa | grep -q lshw; then
+		dnf install -y lshw
+	fi
+
 	NEED_REBOOT=""
 	PCI_LIST=$(lshw -class network -businfo |grep "BlueField-2" |sed 's/pci@\([^ ]\+\).*/\1/')
 
@@ -169,8 +163,6 @@ function help {
 ./bluefield_provision.sh [options]
 
 Options:
-  -r	Install rshim drivers
-  -m	Install MST
   -f	Update BF2 firmware
   -s    Enable ECPF mode if not already enabled
   -p	Set up PXE boot server for provisioning BF2
@@ -182,23 +174,18 @@ EOF
 while getopts "armfsp" opt; do
     case $opt in
         a)
-	    rshim_install
-	    mstflint_install
+	    prep
 	    firmware_update
 	    sriov_check
 	    pxe_install
             ;;
 
-        r)
-	    rshim_install
-            ;;
-        m)
-	    mstflint_install
-            ;;
         f)
+	    prep
 	    firmware_update
             ;;
         s)
+	    prep
 	    sriov_check
             ;;
         p)
