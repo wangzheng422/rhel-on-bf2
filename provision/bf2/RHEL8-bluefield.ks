@@ -25,9 +25,6 @@ firewall --disabled
 # System authorization information
 auth --enableshadow --passalgo=sha512
 
-# Disable selinux
-selinux --disabled
-
 # Do not configure the X Window System
 skipx
 
@@ -79,7 +76,6 @@ systemctl enable serial-getty@ttyAMA1.service
 systemctl start serial-getty@ttyAMA1.service
 
 systemctl disable firewalld
-setenforce 0
 
 wget -P /tmp --no-check-certificate https://gitlab.cee.redhat.com/egarver/smart-nic-poc/-/raw/master/provision/bf2/beaker_repo.tar
 tar xf /tmp/beaker_repo.tar -C /etc/yum.repos.d/
