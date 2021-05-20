@@ -66,6 +66,7 @@ NetworkManager-config-server
 systemctl set-default multi-user.target
 systemctl disable initial-setup-graphical.service
 
+# Necessary for accessing virtual console via rshim
 systemctl enable serial-getty@hvc0
 systemctl start serial-getty@hvc0
 
@@ -77,12 +78,18 @@ systemctl start serial-getty@ttyAMA1.service
 
 systemctl disable firewalld
 
+# This adds beaker repos to the BF2, necessary for installation packages post-installation
 wget -P /tmp --no-check-certificate https://gitlab.cee.redhat.com/egarver/smart-nic-poc/-/raw/master/provision/bf2/beaker_repo.tar
 tar xf /tmp/beaker_repo.tar -C /etc/yum.repos.d/
 dnf update
 
+# Makes network interface naming consistent with BlueOS
 bash <(curl -sk https://gitlab.cee.redhat.com/egarver/smart-nic-poc/-/raw/master/provision/bf2/netdev.sh)
+
+# Install OVS from FDP
 bash <(curl -sk https://gitlab.cee.redhat.com/egarver/smart-nic-poc/-/raw/master/provision/bf2/ovs_install.sh)
+
+# Enables switchdev mode on system boot
 bash <(curl -sk https://gitlab.cee.redhat.com/egarver/smart-nic-poc/-/raw/master/provision/bf2/add_connectx_eswitch_mode_config_service.sh)
 
 dnf install -y podman

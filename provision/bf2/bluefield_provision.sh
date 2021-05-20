@@ -166,6 +166,7 @@ Options:
   -f	Update BF2 firmware
   -s    Enable ECPF mode if not already enabled
   -p	Set up PXE boot server for provisioning BF2
+  -i	Install dependencies
   -a	Run all provisioning scripts
 EOF
 
