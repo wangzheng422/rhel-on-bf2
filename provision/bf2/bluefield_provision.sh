@@ -13,7 +13,7 @@ function die {
 	exit 1
 }
 
-function prep {
+function install_deps {
 	status "Installing rshim driver and tools"
 	dnf install -y rshim expect wget minicom rpm-build lshw
 	systemctl enable --now rshim
@@ -155,7 +155,7 @@ function sriov_check {
 		fi
 	done
 
-	test -n "${NEED_REBOOT}" && bash ./reboot_bf.sh || exit 1
+	test -n "${NEED_REBOOT}" && bash ./reboot_bf.sh
 }
 
 function help {
@@ -171,25 +171,27 @@ EOF
 
 }
 
-while getopts "armfsp" opt; do
+while getopts "afspi" opt; do
     case $opt in
         a)
-	    prep
+	    install_deps
 	    firmware_update
 	    sriov_check
 	    pxe_install
             ;;
 
         f)
-	    prep
 	    firmware_update
             ;;
         s)
-	    prep
 	    sriov_check
             ;;
         p)
 	    pxe_install
+            ;;
+
+        i)
+	    install_deps
             ;;
         \?)
 	    help

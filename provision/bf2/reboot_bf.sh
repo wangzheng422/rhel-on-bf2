@@ -22,8 +22,6 @@
 SUBNET="172.31.100"
 
 # wait for card to come up
-modprobe -rv mlx5_{ib,core}
-sleep 2
 echo "=== STATUS === Rebooting all BF2 cards..."
 
 ALIVE=""
@@ -45,5 +43,3 @@ for I in ${ALIVE}; do
 		printf "%c" "."
 	done
 done
-sleep 5
-modprobe -av mlx5_{ib,core}
