@@ -10,6 +10,7 @@ Prerequisites:
 
 * 64bit Red Hat or CentOS host computer
 * BF2 card physically installed and connected
+* Red Hat Enterprise Linux >=8.4 iso downloaded on the host computer
 
 Quick and dirty installation:
 ---
@@ -17,6 +18,7 @@ Quick and dirty installation:
 ```
 $ git clone https://github.com/kwozyman/rhel-on-bf2
 $ cd rhel-on-bf2
+$ export RHEL_ISO=/path/to/redhat_iso_file
 $ sh bluefiled_provision.sh -a
 ```
 
