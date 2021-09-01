@@ -20,7 +20,13 @@ function install_deps {
 	systemctl status rshim --no-pager -l
 
 	status "Installing mstflint tools"
-	dnf install -y http://download.eng.bos.redhat.com/brewroot/packages/mstflint/4.15.0/1.el8/x86_64/mstflint-4.15.0-1.el8.x86_64.rpm
+    dnf group install "Development Tools"
+    git clone git@github.com:Mellanox/mstflint.git
+    cd mstflint || exit
+    ./autogen.sh
+    ./configure --disable-inband
+    make install
+    cd .. || exit
 }
 
 function firmware_update {
@@ -53,7 +59,8 @@ function pxe_install() {
 	status "Setting up PXE environment"
 
 	# deduced the interface we use to access the internet via the default route
-	local uplink_interface="$(ip route |grep ^default | sed 's/.*dev \([^ ]\+\).*/\1/')"
+    local uplink_interface
+	uplink_interface="$(ip route |grep ^default | sed 's/.*dev \([^ ]\+\).*/\1/')"
 	test -n "${uplink_interface}" || die "need a default route"
 
 	RHEL_ISO="http://download.eng.bos.redhat.com/released/rhel-8/RHEL-8/8.4.0-Beta-1/BaseOS/aarch64/iso/RHEL-8.4.0-20210309.1-aarch64-dvd1.iso"
@@ -75,7 +82,7 @@ function pxe_install() {
 	info "and reboot are slow. Have patience."
 	info ""
 	info "Press enter when you're ready."
-	read
+	read -r
 
 	status "PXE booting the BF2 and starting minicom"
 	echo BOOT_MODE 1 > /dev/rshim0/misc
@@ -110,14 +117,14 @@ function pxe_install() {
 	'
 	reset # reset console, trashed after expect/minicom
 
-	iptables -t nat -A POSTROUTING -o ${uplink_interface} -j MASQUERADE
+	iptables -t nat -A POSTROUTING -o "${uplink_interface}" -j MASQUERADE
 
 	info "The RHEL install has been started. This is the end of the automation."
 	info "I will reattach the minicom console to see the install progress."
 	info "You can drop it anytime with key sequence: ctrl-a X"
 	info ""
 	info "Press enter when you're ready."
-	read
+	read -r
 
 	minicom --color on --baudrate 115200 --device /dev/rshim0/console
 }
