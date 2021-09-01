@@ -21,10 +21,11 @@ $ sh bluefiled_provision.sh -a
 ```
 
 The `-a` switch will run, in order:
-    * Host preparation / dependency install (`-i`)
-    * Update BF2 firmware (`-f`)
-    * Check (and enable) [SR-IOV](https://en.wikipedia.org/wiki/Single-root_input/output_virtualization) support on the host system
-    * Prepare PXE and run PXE install (`-p`)
+
+* Host preparation / dependency install (`-i`)
+* Update BF2 firmware (`-f`)
+* Check (and enable) [SR-IOV](https://en.wikipedia.org/wiki/Single-root_input/output_virtualization) support on the host system
+* Prepare PXE and run PXE install (`-p`)
 
 After following the onscreen instructions, RHEL installation should start and you would end up with a rather standard RHEL installation with the root password of `bluefield`.
 
