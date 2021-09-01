@@ -19,7 +19,7 @@ Quick and dirty installation:
 $ git clone https://github.com/kwozyman/rhel-on-bf2
 $ cd rhel-on-bf2
 $ export RHEL_ISO=/path/to/redhat_iso_file
-$ sh bluefiled_provision.sh -a
+$ sh bluefield_provision.sh -a
 ```
 
 The `-a` switch will run, in order:
@@ -34,7 +34,7 @@ After following the onscreen instructions, RHEL installation should start and yo
 What is the actual process?
 ---
 
-First, we need to install software dependencies for the card. These include the [Mellanox rshim driver](https://github.com/Mellanox/rshim) and the [Mellanox firmware bruning tools](https://github.com/Mellanox/mstflint). The provision script's dependencies are: expect, wget and minicom
+First, we need to install software dependencies for the card. These include the [Mellanox rshim driver](https://github.com/Mellanox/rshim) and the [Mellanox firmware burning tools](https://github.com/Mellanox/mstflint). The provision script's dependencies are: expect, wget and minicom
 
 Second, the firmware is updated to a hardcoded version of `BlueField-3.5.1.11601`.
 
