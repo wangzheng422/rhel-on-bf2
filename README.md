@@ -31,6 +31,14 @@ The `-a` switch will run, in order:
 
 After following the onscreen instructions, RHEL installation should start and you would end up with a rather standard RHEL installation with the root password of `bluefield`.
 
+Do note sometimes the Real Time Clock is not synchronized right after operating system install, so you'll need to:
+
+```
+$ systemctl stop chronyd.service
+$ chronyd -q 'server clock.redhat.com iburst'
+$ hwclock --systohc --localtime
+```
+
 What is the actual process?
 ---
 

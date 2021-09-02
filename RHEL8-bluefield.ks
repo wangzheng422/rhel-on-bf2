@@ -80,4 +80,8 @@ systemctl disable firewalld
 
 dnf update
 
+systemctl stop chronyd.service
+chronyd -q 'server clock.redhat.com iburst'
+hwclock --systohc --localtime
+
 %end
