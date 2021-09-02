@@ -20,12 +20,13 @@ function install_deps {
 	systemctl status rshim --no-pager -l
 
 	status "Installing mstflint tools"
-    dnf group install "Development Tools"
+    dnf group install -y "Development Tools"
+    dnf install -y openssl-devel
     git clone git@github.com:Mellanox/mstflint.git
     cd mstflint || exit
     ./autogen.sh
     ./configure --disable-inband
-    make install
+    make && make install
     cd .. || exit
 }
 
