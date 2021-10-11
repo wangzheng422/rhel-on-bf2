@@ -51,3 +51,9 @@ The host is then prepared as a PXE boot host, partly following [this documentati
 `minicom` is then used to attach to the card's console and some simple `expect` rules navigate the menus as much as possible. Please note that one needs to manually select the 'PXE boot' option from the menu, as instructed by the onscreen prompts in the script, as it is not possible to predict the position of that particular menu item.
 
 For the installation start, the `RHEL8-bluefield.ks` Kickstart file is used and should provide you at the end with a rather default RHEL install.
+
+
+Troubleshooting
+---
+
+To force the network connection between the card and the host, the `network-reset.sh` script can be used. The `-r` switch will also reboot the card.
