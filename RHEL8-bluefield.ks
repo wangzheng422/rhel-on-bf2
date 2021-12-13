@@ -9,21 +9,22 @@ keyboard us
 
 # Use network installation
 url --url="REPO_URL"
+# url --url="https://mirrors.sjtug.sjtu.edu.cn/rocky/8.5/BaseOS/x86_64/os/"
 
 # Accept the license
 eula --agreed
 
 # System timezone
-timezone --utc Asia/Jerusalem
+timezone Asia/Shanghai --isUtc
 
 # Root password
-rootpw bluefield
+rootpw --plaintext panpan
 
 # Disable firewall
 firewall --disabled
 
 # System authorization information
-auth --enableshadow --passalgo=sha512
+# auth --enableshadow --passalgo=sha512
 
 # Do not configure the X Window System
 skipx
