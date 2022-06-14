@@ -28,6 +28,11 @@
 # some steps based on
 # https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html-single/performing_an_advanced_rhel_installation/index/#preparing-for-a-network-install_installing-rhel-as-an-experienced-user
 
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# !!!!! DO NOT USE THIS FILE !!!!!
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# there is another file for internal use only.
+
 # Save the current directory.
 CUR_DIR=$PWD
 
