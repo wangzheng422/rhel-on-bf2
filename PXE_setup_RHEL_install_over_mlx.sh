@@ -37,7 +37,7 @@ TFTP_CFG=/etc/xinetd.d/tftp
 KS_FILE=
 ENABLE_KS=0
 
-SUBNET="172.31.100"
+SUBNET="192.168.100"
 REPO_IP="${SUBNET}.1"
 PROTOCOL="ETH"
 NETDEV=TBD
@@ -95,7 +95,7 @@ setup_rshim()
 {
     nmcli conn delete ${NETDEV}
     rm /etc/sysconfig/network-scripts/ifcfg-${NETDEV}
-    nmcli conn add type tun mode tap con-name ${NETDEV} ifname ${NETDEV} autoconnect yes ip4 ${REPO_IP}
+    nmcli conn add type tun mode tap con-name ${NETDEV} ifname ${NETDEV} autoconnect yes ip4 ${REPO_IP}/24
     nmcli conn modify tmfifo_net0 ipv4.routes ${SUBNET}.0/24
     systemctl restart NetworkManager
     nmcli conn up ${NETDEV}
