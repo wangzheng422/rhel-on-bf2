@@ -150,13 +150,16 @@ EOF
 
 
 # Parse command line.
-while getopts "d:i:k:p:" opt; do
+while getopts "d:i:k:p:b:" opt; do
     case $opt in
         d)
             NETDEV=$OPTARG
             ;;
         i)
             DISTRO_ISO=`$REAL_PATH $OPTARG`
+            ;;
+        b)
+            BASE_DISTRO_ISO=`$REAL_PATH $OPTARG`
             ;;
         k)
             ENABLE_KS=1
@@ -225,6 +228,25 @@ if [ ! -d ${PXE_MOUNT}/EFI ]; then
 fi
 
 
+BASE_DISTRO_VER=$(basename ${BASE_DISTRO_ISO} | sed -e 's/-dvd1.iso//g')
+
+# PXE mount path (temporary).
+BASE_PXE_MOUNT=/var/ftp/${BASE_DISTRO_VER}
+
+echo "Mounting the .iso file to ${BASE_PXE_MOUNT}..."
+umount ${BASE_PXE_MOUNT} 2>/dev/null
+mkdir -p ${BASE_PXE_MOUNT} 2>/dev/null
+for i in 1..3; do
+    mount -t iso9660 -o loop ${BASE_DISTRO_ISO} ${BASE_PXE_MOUNT} 2>/dev/null
+    [ -d ${BASE_PXE_MOUNT}/EFI ] && break
+    sleep 1
+done
+if [ ! -d ${BASE_PXE_MOUNT}/EFI ]; then
+    echo "Unable to mount ${DISTRO_ISO}."
+    exit -1
+fi
+
+
 # Restart DHCP automatically (if dhcpd is running) when board reboots.
 DHCPD_RESTART_CMD=`svcctl_cmd restart dhcpd`
 IFUP_LOCAL=/sbin/ifup-local
@@ -274,9 +296,9 @@ echo "Generate TFTP images..."
 /bin/rm -rf ${TFTP_PATH}/pxelinux/
 mkdir -p ${TFTP_PATH}/pxelinux/pxelinux.cfg
 mkdir -p ${TFTP_PATH}/pxelinux/images/${DISTRO_VER}
-/bin/cp -fv ${PXE_MOUNT}/EFI/BOOT/BOOTAA64.EFI ${TFTP_PATH}/
-/bin/cp -fv ${PXE_MOUNT}/EFI/BOOT/grubaa64.efi ${TFTP_PATH}/
-/bin/cp -fv ${PXE_MOUNT}/EFI/BOOT/mmaa64.efi ${TFTP_PATH}/
+/bin/cp -fv ${BASE_PXE_MOUNT}/EFI/BOOT/BOOTAA64.EFI ${TFTP_PATH}/
+/bin/cp -fv ${BASE_PXE_MOUNT}/EFI/BOOT/grubaa64.efi ${TFTP_PATH}/
+/bin/cp -fv ${BASE_PXE_MOUNT}/EFI/BOOT/mmaa64.efi ${TFTP_PATH}/
 /bin/cp -fv ${PXE_MOUNT}/images/pxeboot/vmlinuz ${TFTP_PATH}/pxelinux/images/${DISTRO_VER}/
 /bin/cp -fv ${PXE_MOUNT}/images/pxeboot/initrd.img ${TFTP_PATH}/pxelinux/images/${DISTRO_VER}/
 
