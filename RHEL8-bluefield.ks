@@ -23,7 +23,7 @@ rootpw bluefield
 firewall --disabled
 
 # System authorization information
-auth --enableshadow --passalgo=sha512
+# auth --enableshadow --passalgo=sha512
 
 # Do not configure the X Window System
 skipx
@@ -78,7 +78,7 @@ systemctl start serial-getty@ttyAMA1.service
 
 systemctl disable firewalld
 
-dnf update
+# dnf update
 
 systemctl stop chronyd.service
 chronyd -q 'server clock.redhat.com iburst'

@@ -158,9 +158,6 @@ while getopts "d:i:k:p:b:" opt; do
         i)
             DISTRO_ISO=`$REAL_PATH $OPTARG`
             ;;
-        b)
-            BASE_DISTRO_ISO=`$REAL_PATH $OPTARG`
-            ;;
         k)
             ENABLE_KS=1
             KS_FILE=`$REAL_PATH $OPTARG`
@@ -228,23 +225,23 @@ if [ ! -d ${PXE_MOUNT}/EFI ]; then
 fi
 
 
-BASE_DISTRO_VER=$(basename ${BASE_DISTRO_ISO} | sed -e 's/-dvd1.iso//g')
+# BASE_DISTRO_VER="$PXE_MOUNT-base"
 
 # PXE mount path (temporary).
-BASE_PXE_MOUNT=/var/ftp/${BASE_DISTRO_VER}
+BASE_PXE_MOUNT="${PXE_MOUNT}-base"
 
 echo "Mounting the .iso file to ${BASE_PXE_MOUNT}..."
 umount ${BASE_PXE_MOUNT} 2>/dev/null
 mkdir -p ${BASE_PXE_MOUNT} 2>/dev/null
-for i in 1..3; do
-    mount -t iso9660 -o loop ${BASE_DISTRO_ISO} ${BASE_PXE_MOUNT} 2>/dev/null
-    [ -d ${BASE_PXE_MOUNT}/EFI ] && break
-    sleep 1
-done
-if [ ! -d ${BASE_PXE_MOUNT}/EFI ]; then
-    echo "Unable to mount ${DISTRO_ISO}."
-    exit -1
-fi
+# for i in 1..3; do
+    mount -o loop ${PXE_MOUNT}/images/efiboot.img ${BASE_PXE_MOUNT} 2>/dev/null
+    # [ -d ${BASE_PXE_MOUNT}/EFI ] && break
+    # sleep 1
+# done
+# if [ ! -d ${BASE_PXE_MOUNT}/EFI ]; then
+#     echo "Unable to mount ${DISTRO_ISO}."
+#     exit -1
+# fi
 
 
 # Restart DHCP automatically (if dhcpd is running) when board reboots.
@@ -293,14 +290,18 @@ fi
 
 # Copy over the tftp files.
 echo "Generate TFTP images..."
-/bin/rm -rf ${TFTP_PATH}/pxelinux/
-mkdir -p ${TFTP_PATH}/pxelinux/pxelinux.cfg
-mkdir -p ${TFTP_PATH}/pxelinux/images/${DISTRO_VER}
+/bin/rm -rf ${TFTP_PATH}/*
+# mkdir -p ${TFTP_PATH}/pxelinux/pxelinux.cfg
+# mkdir -p ${TFTP_PATH}/pxelinux/images/${DISTRO_VER}
+mkdir -p ${TFTP_PATH}/{images,isolinux}
 /bin/cp -fv ${BASE_PXE_MOUNT}/EFI/BOOT/BOOTAA64.EFI ${TFTP_PATH}/
 /bin/cp -fv ${BASE_PXE_MOUNT}/EFI/BOOT/grubaa64.efi ${TFTP_PATH}/
 /bin/cp -fv ${BASE_PXE_MOUNT}/EFI/BOOT/mmaa64.efi ${TFTP_PATH}/
-/bin/cp -fv ${PXE_MOUNT}/images/pxeboot/vmlinuz ${TFTP_PATH}/pxelinux/images/${DISTRO_VER}/
-/bin/cp -fv ${PXE_MOUNT}/images/pxeboot/initrd.img ${TFTP_PATH}/pxelinux/images/${DISTRO_VER}/
+/bin/cp -fv ${PXE_MOUNT}/isolinux/isolinux.cfg ${TFTP_PATH}/isolinux.cfg
+/bin/cp -fv ${PXE_MOUNT}/images/pxeboot/vmlinuz ${TFTP_PATH}/
+/bin/cp -fv ${PXE_MOUNT}/images/pxeboot/initrd.img ${TFTP_PATH}/
+/bin/cp -fv ${PXE_MOUNT}/images/assisted_installer_custom.img ${TFTP_PATH}/
+/bin/cp -fv ${PXE_MOUNT}/images/ignition.img ${TFTP_PATH}/
 
 # get pxelinux.0
 case "${DISTRO_ISO}" in
@@ -322,7 +323,7 @@ esac
 
 # Generate the grub.cfg.
 echo "Generate the grub.cfg..."
-grub_opts="inst.repo=http://${REPO_IP}/${DISTRO_VER}/ console=tty0 console=tty1 console=ttyS0,115200 console=ttyS1,115200"
+grub_opts=" console=tty0 console=ttyS0,115200 console=ttyAMA1 console=hvc0 console=ttyAMA0 earlycon=pl011,0x01000000 "
 if [ ${ENABLE_KS} -eq 1 ]; then
     grub_opts="${grub_opts} inst.ks=http://${REPO_IP}/ks_${DISTRO_VER}/kickstart.ks"
 fi
@@ -334,7 +335,7 @@ case "${PROTOCOL}" in
         grub_opts="${grub_opts} bootdev=${NETDEV} ksdevice=${NETDEV} net.ifnames=0 biosdevname=0 rd.neednet=1 rd.boofif=0 rd.driver.pre=mlx5_ib,mlx4_ib,ib_ipoib ip=${NETDEV}:dhcp rd.net.dhcp.retry=10 rd.net.timeout.iflink=60 rd.net.timeout.ifup=80 rd.net.timeout.carrier=80"
         ;;
     tmfifo)
-        grub_opts="${grub_opts} ip=dhcp ip=dhcp console=ttyAMA1 console=hvc0 console=ttyAMA0 earlycon=pl011,0x01000000"
+        grub_opts="${grub_opts} rd.driver.pre=mlx5_core ip=192.168.77.55::192.168.77.9:255.255.255.0:bf2-dpu:enp3s0f1:none rd.neednet=1  "
         ;;
 esac
 
@@ -379,10 +380,24 @@ EOF
     *aarch64*)
     cat > ${TFTP_PATH}/grub.cfg <<EOF
 
+function load_video {
+  insmod efi_gop
+  insmod efi_uga
+  insmod video_bochs
+  insmod video_cirrus
+  insmod all_video
+}
+
+load_video
+set gfxpayload=keep
+insmod gzio
+insmod part_gpt
+insmod ext2
+
 # ${DISTRO_ISO} ${REPO_IP}
-menuentry 'Install ${DISTRO_VER}' --class red --class gnu-linux --class gnu --class os {
-    linux pxelinux/images/${DISTRO_VER}/vmlinuz showopts ${grub_opts}
-    initrd pxelinux/images/${DISTRO_VER}/initrd.img
+menuentry 'Install coreos' --class red --class gnu-linux --class gnu --class os {
+    linux vmlinuz ignition.firstboot ignition.platform.id=metal 'coreos.live.rootfs_url=http://192.168.100.1:8081/ocp-bf2-aarch64-rootfs.img' coreos.inst.insecure  ${grub_opts}
+    initrd initrd.img ignition.img assisted_installer_custom.img
 }
 
 menuentry 'Start installer ${DISTRO_VER} but break to shell' --class red --class gnu-linux --class gnu --class os {
@@ -446,24 +461,23 @@ option architecture-type code 93 = unsigned integer 16;
 allow booting;
 allow bootp;
 
+
+next-server ${REPO_IP};
+always-broadcast on;
+
+${filesettings}
+
 subnet ${SUBNET}.0 netmask 255.255.255.0 {
     range ${SUBNET}.10 ${SUBNET}.20;
     option broadcast-address ${SUBNET}.255;
     option routers ${REPO_IP};
     ${NAME_SERVERS_STR}
     ${DOMAIN_NAMES_STR}
-    option dhcp-client-identifier = option dhcp-client-identifier;
 
-    class "pxeclients" {
-        match if substring (option vendor-class-identifier, 0, 9) = "PXEClient";
-        next-server ${REPO_IP};
-        always-broadcast on;
-
-        ${filesettings}
-    }
 }
 
 EOF
+    # option dhcp-client-identifier = option dhcp-client-identifier;
 
 #
 # Setup HTTP.
@@ -526,4 +540,7 @@ systemctl restart httpd
 
 echo -e "\nDone."
 echo "Next step: PXE boot from target (make sure to select the correct port!)"
+
+# umount ${BASE_PXE_MOUNT}
+# umount ${PXE_MOUNT} 
 
