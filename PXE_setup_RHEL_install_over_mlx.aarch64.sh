@@ -335,7 +335,7 @@ case "${PROTOCOL}" in
         grub_opts="${grub_opts} bootdev=${NETDEV} ksdevice=${NETDEV} net.ifnames=0 biosdevname=0 rd.neednet=1 rd.boofif=0 rd.driver.pre=mlx5_ib,mlx4_ib,ib_ipoib ip=${NETDEV}:dhcp rd.net.dhcp.retry=10 rd.net.timeout.iflink=60 rd.net.timeout.ifup=80 rd.net.timeout.carrier=80"
         ;;
     tmfifo)
-        grub_opts="${grub_opts} rd.driver.pre=mlx5_core ip=192.168.77.55::192.168.77.9:255.255.255.0:bf2-dpu:enp3s0f1:none rd.neednet=1  "
+        grub_opts="${grub_opts} rd.driver.pre=mlx5_core ip=192.168.100.5::192.168.100.1:255.255.255.0:bf2-dpu:eth0:none  ip=192.168.77.55::192.168.77.9:255.255.255.0:bf2-dpu:enp3s0f1:none  rd.neednet=1 "
         ;;
 esac
 
@@ -396,8 +396,8 @@ insmod ext2
 
 # ${DISTRO_ISO} ${REPO_IP}
 menuentry 'Install coreos' --class red --class gnu-linux --class gnu --class os {
-    linux vmlinuz ignition.firstboot ignition.platform.id=metal 'coreos.live.rootfs_url=http://192.168.100.1:8081/ocp-bf2-aarch64-rootfs.img' coreos.inst.insecure  ${grub_opts}
-    initrd initrd.img ignition.img assisted_installer_custom.img
+    linux vmlinuz ignition.firstboot ignition.platform.id=metal 'coreos.live.rootfs_url=http://192.168.77.11:8080/ocp-bf2-aarch64-rootfs.img' coreos.inst.insecure  ${grub_opts}
+    initrd initrd.img ignition.img 
 }
 
 menuentry 'Start installer ${DISTRO_VER} but break to shell' --class red --class gnu-linux --class gnu --class os {
