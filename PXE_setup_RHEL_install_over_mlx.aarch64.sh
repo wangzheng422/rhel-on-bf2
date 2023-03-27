@@ -335,7 +335,7 @@ case "${PROTOCOL}" in
         grub_opts="${grub_opts} bootdev=${NETDEV} ksdevice=${NETDEV} net.ifnames=0 biosdevname=0 rd.neednet=1 rd.boofif=0 rd.driver.pre=mlx5_ib,mlx4_ib,ib_ipoib ip=${NETDEV}:dhcp rd.net.dhcp.retry=10 rd.net.timeout.iflink=60 rd.net.timeout.ifup=80 rd.net.timeout.carrier=80"
         ;;
     tmfifo)
-        grub_opts="${grub_opts} rd.driver.pre=mlx5_core  ip=192.168.77.55::192.168.77.9:255.255.255.0:bf2-dpu:enp3s0f1:none  rd.neednet=1 "
+        grub_opts="${grub_opts} rd.driver.pre=mlx5_core  ip=192.168.77.55::192.168.77.9:255.255.255.0:bf2-dpu:enp3s0f1:none  nameserver=192.168.77.11  rd.neednet=1 "
         ;;
 esac
 
