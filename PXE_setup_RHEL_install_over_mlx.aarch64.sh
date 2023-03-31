@@ -211,8 +211,18 @@ PXE_MOUNT=/var/ftp/${DISTRO_VER}
 # Kickstart config path.
 BF_KS_PATH=/var/ftp/ks_${DISTRO_VER}
 
+
+# BASE_DISTRO_VER="$PXE_MOUNT-base"
+
+# PXE mount path (temporary).
+BASE_PXE_MOUNT="${PXE_MOUNT}-base"
+
+echo "Mounting the .iso file to ${BASE_PXE_MOUNT}..."
 echo "Mounting the .iso file to ${PXE_MOUNT}..."
-umount ${PXE_MOUNT} 2>/dev/null
+umount ${BASE_PXE_MOUNT} 
+# umount /run/media/root/EFI-SYSTEM
+umount ${PXE_MOUNT} 
+
 mkdir -p ${PXE_MOUNT} 2>/dev/null
 for i in 1..3; do
     mount -t iso9660 -o loop ${DISTRO_ISO} ${PXE_MOUNT} 2>/dev/null
@@ -224,14 +234,6 @@ if [ ! -d ${PXE_MOUNT}/EFI ]; then
     exit -1
 fi
 
-
-# BASE_DISTRO_VER="$PXE_MOUNT-base"
-
-# PXE mount path (temporary).
-BASE_PXE_MOUNT="${PXE_MOUNT}-base"
-
-echo "Mounting the .iso file to ${BASE_PXE_MOUNT}..."
-umount ${BASE_PXE_MOUNT} 2>/dev/null
 mkdir -p ${BASE_PXE_MOUNT} 2>/dev/null
 # for i in 1..3; do
     mount -o loop ${PXE_MOUNT}/images/efiboot.img ${BASE_PXE_MOUNT} 2>/dev/null
@@ -242,6 +244,7 @@ mkdir -p ${BASE_PXE_MOUNT} 2>/dev/null
 #     echo "Unable to mount ${DISTRO_ISO}."
 #     exit -1
 # fi
+
 
 
 # Restart DHCP automatically (if dhcpd is running) when board reboots.
