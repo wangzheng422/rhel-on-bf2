@@ -220,7 +220,7 @@ BASE_PXE_MOUNT="${PXE_MOUNT}-base"
 echo "Mounting the .iso file to ${BASE_PXE_MOUNT}..."
 echo "Mounting the .iso file to ${PXE_MOUNT}..."
 umount ${BASE_PXE_MOUNT} 
-# umount /run/media/root/EFI-SYSTEM
+umount /run/media/root/EFI-SYSTEM
 umount ${PXE_MOUNT} 
 
 mkdir -p ${PXE_MOUNT} 2>/dev/null
@@ -399,7 +399,7 @@ insmod ext2
 
 # ${DISTRO_ISO} ${REPO_IP}
 menuentry 'Install coreos' --class red --class gnu-linux --class gnu --class os {
-    linux vmlinuz ignition.firstboot ignition.platform.id=metal 'coreos.live.rootfs_url=http://192.168.77.11:8080/ocp-bf2-aarch64-rootfs.img' coreos.inst.insecure  ${grub_opts}
+    linux vmlinuz ignition.firstboot ignition.platform.id=metal 'coreos.live.rootfs_url=http://192.168.77.11:8080/ocp-bf2-aarch64-rootfs.img' coreos.inst.insecure coreos.inst.install_dev=/dev/mmcblk0 ${grub_opts}
     initrd initrd.img ignition.img 
 }
 
