@@ -326,7 +326,7 @@ esac
 
 # Generate the grub.cfg.
 echo "Generate the grub.cfg..."
-grub_opts=" console=tty0 console=ttyS0,115200 console=ttyAMA1 console=hvc0 console=ttyAMA0 earlycon=pl011,0x01000000 "
+grub_opts=" console=tty0 console=ttyS0,115200 console=ttyAMA1 console=hvc0 console=ttyAMA0 earlycon=pl011,0x01000000 earlycon=pl011,0x01800000"
 if [ ${ENABLE_KS} -eq 1 ]; then
     grub_opts="${grub_opts} inst.ks=http://${REPO_IP}/ks_${DISTRO_VER}/kickstart.ks"
 fi
